@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resin Aura By Priya</title>
+<title>Resin Aura By Priya Chakraborty</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--cream:#fdf6ee;--warm:#f5ebe0;--brown:#5a3e2b;--amber:#c06c2d;--amber-light:#e8956d;--amber-pale:#fde8d8;--text:#2d1f14;--muted:#8c7060;--shadow:0 4px 24px rgba(90,62,43,.10);--shadow-hover:0 8px 32px rgba(90,62,43,.18);}
@@ -168,7 +168,7 @@ footer strong{color:var(--amber-light);font-family:'Playfair Display',serif;}
 
 <header>
   <div class="header-inner">
-    <div class="logo">Resin <span>Aura By Priya</span></div>
+    <div class="logo">Resin <span>Aura By Priya Chakraborty</span></div>
     <div class="header-actions">
       <button class="btn-icon" onclick="openCart()">🛒<span class="cart-badge" id="cartBadge">0</span></button>
       <button class="user-btn" id="userBtn" onclick="handleUserBtn()">Login</button>
@@ -194,7 +194,7 @@ footer strong{color:var(--amber-light);font-family:'Playfair Display',serif;}
   <div class="products-grid" id="productsGrid"><div class="no-products"><div style="font-size:40px">⏳</div><p>Loading products...</p></div></div>
 </div>
 
-<footer><strong>Aura By Priya</strong><br>Handmade with love 💛 | Delivery charges applicable based on location</footer>
+<footer><strong>Resin Aura By Priya Chakraborty</strong><br>Handmade with love 💛 | Delivery charges applicable based on location</footer>
 
 <div class="overlay" id="overlay" onclick="closeAll()"></div>
 
@@ -384,10 +384,32 @@ function closeDetail(){document.getElementById('detailModal').classList.remove('
 
 /* ─── CART ─── */
 function quickAdd(id){
-  const p=allProducts.find(x=>x.id===id);if(!p)return;
-  const vars=p.variants||[];
-  if(vars.length>1){openDetail(id);showToast('Please choose an option 👆');return;}
-  addToCart(id,vars.length===1?vars[0]:null);
+  const p=allProducts.find(x=>x.id===id);
+  if(!p) return;
+
+  const vars = p.variants || [];
+
+  // multiple variants থাকলে selected check কর
+  if(vars.length > 1){
+    const selectedBtn = document.querySelector('.variant-btn.selected');
+
+    if(!selectedBtn){
+      openDetail(id);
+      showToast('Please choose an option 👆');
+      return;
+    }
+
+    const variant = {
+      label: selectedBtn.querySelector('.v-name').textContent,
+      price: parseInt(selectedBtn.querySelector('.v-price').textContent.replace('₹',''))
+    };
+
+    addToCart(id, variant);
+    return;
+  }
+
+  // single or no variant
+  addToCart(id, vars.length===1 ? vars[0] : null);
 }
 function addToCart(id,variant=null){
   const p=allProducts.find(x=>x.id===id);if(!p)return;
