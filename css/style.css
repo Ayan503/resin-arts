@@ -36,7 +36,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 header {
   background: var(--brown);
   padding: 0 20px;
-  position: sticky; top: 0; z-index: 100;
+  position: fixed; top: 0; z-index: 100;
   box-shadow: 0 2px 20px rgba(0,0,0,.18);
 }
 .header-inner {
