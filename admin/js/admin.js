@@ -47,13 +47,14 @@ function showPage(name,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   el&&el.classList.add('active');
-  const titles={dashboard:'Dashboard',products:'Products',orders:'Orders',reviews:'Reviews',settings:'Settings'};
+  const titles={dashboard:'Dashboard',products:'Products',orders:'Orders',reviews:'Reviews',settings:'Settings',community:'🌸 Community Feed'};
   document.getElementById('topbarTitle').textContent=titles[name]||name;
   if(name==='products')  renderProductTable();
   if(name==='orders')    renderOrderTable();
   if(name==='reviews')   renderReviewsTable();
   if(name==='dashboard') renderDashboard();
   if(name==='settings')  renderSettingsPage();
+  if(name==='community') renderCommunityPage();
   closeSidebar();
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('mobOverlay').classList.toggle('show');}
@@ -458,3 +459,115 @@ document.getElementById('orderModal').addEventListener('click',function(e){if(e.
 
 checkAdminSession();
 loadAdminCreds();
+/* ══════════════════════════════
+   COMMUNITY FEED ADMIN
+══════════════════════════════ */
+let allCommunityPosts = [];
+let allCommunityComments = {};
+
+async function renderCommunityPage() {
+  const content = document.getElementById('communityContent');
+  content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">⏳ Loading posts...</div>';
+  try {
+    allCommunityPosts = await sb('community_posts?order=created_at.desc');
+    content.innerHTML = `
+      <div class="section-card">
+        <div class="section-card-header">
+          <span class="section-card-title">Community Posts (${allCommunityPosts.length})</span>
+          <a href="../community.html" target="_blank" class="btn-add" style="text-decoration:none">🌸 Open Feed</a>
+        </div>
+        ${allCommunityPosts.length === 0 ? `<div class="empty-state"><div class="icon">🌸</div><p>No posts yet</p></div>` : `
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Author</th><th>Post</th><th>Image</th><th>Likes</th><th>Comments</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="communityBody">${renderCommunityRows()}</tbody>
+          </table>
+        </div>`}
+      </div>`;
+  } catch(e) {
+    content.innerHTML = `<div class="section-card"><div class="empty-state"><div class="icon">⚠️</div><p>Error loading community posts.<br><small>${e.message}</small></p></div></div>`;
+  }
+}
+
+function renderCommunityRows() {
+  return allCommunityPosts.map(post => {
+    const date = post.created_at ? new Date(post.created_at).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'2-digit'}) : '—';
+    const textPreview = post.text ? post.text.substring(0, 80) + (post.text.length > 80 ? '...' : '') : '<em style="color:var(--muted)">No text</em>';
+    const imgCell = post.image ? `<img src="${post.image}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="adminViewImg('${post.image.replace(/'/g,"\\'")}')">` : '—';
+    return `<tr>
+      <td>
+        <strong style="font-size:13px">${escAdm(post.author_name || 'Unknown')}</strong>
+        <div style="font-size:11px;color:var(--muted)">${escAdm(post.author_email || '')}</div>
+      </td>
+      <td style="max-width:200px;font-size:13px">${textPreview}</td>
+      <td>${imgCell}</td>
+      <td style="text-align:center"><strong>${post.likes || 0}</strong></td>
+      <td style="text-align:center"><strong>${post.comments_count || 0}</strong>
+        <button onclick="viewPostComments('${post.id}')" style="background:none;border:none;color:var(--amber);cursor:pointer;font-size:11px;display:block;margin-top:2px">view</button>
+      </td>
+      <td style="font-size:12px;color:var(--muted)">${date}</td>
+      <td><button class="btn-delete" onclick="adminDeletePost('${post.id}')">Delete</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function adminDeletePost(postId) {
+  if (!confirm('Delete this post and all its comments?')) return;
+  try {
+    // Delete comments first
+    await sb('community_comments?post_id=eq.' + postId, { method: 'DELETE', prefer: 'return=minimal' });
+    await sb('community_posts?id=eq.' + postId, { method: 'DELETE', prefer: 'return=minimal' });
+    showToast('Post deleted');
+    renderCommunityPage();
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function viewPostComments(postId) {
+  try {
+    const comments = await sb('community_comments?post_id=eq.' + postId + '&order=created_at.asc');
+    const post = allCommunityPosts.find(p => p.id == postId);
+    const modal = document.getElementById('orderModal');
+    const box = document.getElementById('orderModalBox');
+    box.innerHTML = `
+      <div class="modal-header">
+        <h3>Comments on: ${escAdm((post?.text || 'Post').substring(0,40))}...</h3>
+        <button class="btn-close" onclick="closeOrderModal()">×</button>
+      </div>
+      ${comments.length === 0 ? '<p style="text-align:center;color:var(--muted);padding:24px">No comments yet</p>' : comments.map(c => `
+        <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm)">
+          <div style="flex:1">
+            <strong style="font-size:13px">${escAdm(c.author_name || 'User')}</strong>
+            <span style="font-size:11px;color:var(--muted);margin-left:8px">${escAdm(c.author_email || '')}</span>
+            <p style="font-size:13px;margin-top:4px;color:var(--text)">${escAdm(c.text)}</p>
+          </div>
+          <button class="btn-delete" onclick="adminDeleteComment('${c.id}','${postId}')" style="align-self:flex-start;flex-shrink:0">Del</button>
+        </div>`).join('')}`;
+    modal.classList.add('show');
+  } catch(e) { showToast('Error loading comments', 'error'); }
+}
+
+async function adminDeleteComment(commentId, postId) {
+  if (!confirm('Delete this comment?')) return;
+  try {
+    await sb('community_comments?id=eq.' + commentId, { method: 'DELETE', prefer: 'return=minimal' });
+    // Update comment count
+    const post = allCommunityPosts.find(p => p.id == postId);
+    if (post) post.comments_count = Math.max(0, (post.comments_count || 0) - 1);
+    showToast('Comment deleted');
+    await viewPostComments(postId);
+  } catch(e) { showToast('Error', 'error'); }
+}
+
+function adminViewImg(src) {
+  const modal = document.getElementById('orderModal');
+  const box = document.getElementById('orderModalBox');
+  box.innerHTML = `
+    <div class="modal-header"><h3>Post Image</h3><button class="btn-close" onclick="closeOrderModal()">×</button></div>
+    <div style="text-align:center;padding:12px"><img src="${src}" style="max-width:100%;max-height:60vh;border-radius:12px;object-fit:contain"></div>`;
+  modal.classList.add('show');
+}
+
+function escAdm(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
