@@ -601,8 +601,6 @@ footer strong { color: var(--amber-light); font-family: 'Playfair Display', seri
 
 /*Mobile Section*/
 html, body {
-  width: 100%;
-  max-width: 100%;
   overflow-x: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -614,19 +612,6 @@ body::-webkit-scrollbar {
   height: 0;
   display: none;
 }
-
-* {
-  box-sizing: border-box;
-  max-width: 100%;
-}
-
-img,
-iframe,
-video {
-  max-width: 100%;
-  height: auto;
-}
-
 *::-webkit-scrollbar {
   display: none;
 }
