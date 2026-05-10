@@ -601,3 +601,16 @@ footer strong { color: var(--amber-light); font-family: 'Playfair Display', seri
 }
 .upload-area-rv:hover { border-color: var(--amber); }
 .upload-area-rv input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+/*Mobile Section*/
+html, body {
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
