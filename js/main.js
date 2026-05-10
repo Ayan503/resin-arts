@@ -893,17 +893,65 @@ function showToast(msg, type='success') {
 /* ══════════════════════════════
    INIT
 ══════════════════════════════ */
+function updateProductCount() {
+  const el = document.getElementById('productCount');
+  if (el && allProducts.length) el.textContent = allProducts.length + '+';
+}
+
 async function init() {
   initTheme();
   createParticles();
-  await loadProducts();
-  buildCatBar();
-  renderProducts();
   updateCartBadge();
   updateUserBtn();
+
+  // Step 1: Show cached products INSTANTLY (no network wait)
+  try {
+    const raw = localStorage.getItem('resign_prod_cache');
+    if (raw) {
+      const { data, ts } = JSON.parse(raw);
+      if (data && data.length) {
+        allProducts = data;
+        buildCatBar();
+        renderProducts();
+        updateProductCount();
+      }
+    }
+  } catch {}
+
+  // Step 2: Fetch fresh from Supabase in background
+  try {
+    const fresh = await sb('products?order=id.asc');
+    if (fresh && fresh.length) {
+      localStorage.setItem('resign_prod_cache', JSON.stringify({ data: fresh, ts: Date.now() }));
+      // Only re-render if something changed
+      if (fresh.length !== allProducts.length || fresh[0]?.id !== allProducts[0]?.id) {
+        allProducts = fresh;
+        buildCatBar();
+        renderProducts();
+      } else {
+        allProducts = fresh;
+      }
+      updateProductCount();
+    } else if (!allProducts.length) {
+      // First time ever — seed default products
+      document.getElementById('productsGrid').innerHTML =
+        `<div class="no-products"><div style="font-size:40px">⏳</div><p>Setting up products...</p></div>`;
+      await seedProducts();
+      allProducts = await sb('products?order=id.asc');
+      localStorage.setItem('resign_prod_cache', JSON.stringify({ data: allProducts, ts: Date.now() }));
+      buildCatBar();
+      renderProducts();
+      updateProductCount();
+    }
+  } catch(e) {
+    console.error('Products fetch error:', e);
+    if (!allProducts.length) {
+      document.getElementById('productsGrid').innerHTML =
+        `<div class="no-products"><div style="font-size:40px">⚠️</div><p>Could not load products.<br>Check your internet connection.</p></div>`;
+    }
+  }
+
+  // Reviews load separately — doesn't block anything
   loadAndRenderReviews();
-  // Update real product count in about section
-  const countEl = document.getElementById('productCount');
-  if (countEl) countEl.textContent = allProducts.length + '+';
 }
 init();
