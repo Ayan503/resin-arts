@@ -21,11 +21,22 @@ async function sb(path, opt = {}) {
 }
 
 const DB = {
-  // Products
-  getProducts:    ()         => sb('products?order=id.asc'),
-  addProduct:     (p)        => sb('products', { method:'POST', body:JSON.stringify(p) }),
-  updateProduct:  (id, p)    => sb('products?id=eq.'+id, { method:'PATCH', body:JSON.stringify(p) }),
-  deleteProduct:  (id)       => sb('products?id=eq.'+id, { method:'DELETE', prefer:'return=minimal' }),
+  // Products — with localStorage cache (10 min TTL)
+  getProducts: async () => {
+    try {
+      const raw = localStorage.getItem('resign_prod_cache');
+      if (raw) {
+        const { data, ts } = JSON.parse(raw);
+        if (Date.now() - ts < 10 * 60 * 1000 && data && data.length) return data;
+      }
+    } catch {}
+    const data = await sb('products?order=id.asc');
+    try { if (data && data.length) localStorage.setItem('resign_prod_cache', JSON.stringify({ data, ts: Date.now() })); } catch {}
+    return data;
+  },
+  addProduct:    (p)     => { localStorage.removeItem('resign_prod_cache'); return sb('products', { method:'POST', body:JSON.stringify(p) }); },
+  updateProduct: (id, p) => { localStorage.removeItem('resign_prod_cache'); return sb('products?id=eq.'+id, { method:'PATCH', body:JSON.stringify(p) }); },
+  deleteProduct: (id)    => { localStorage.removeItem('resign_prod_cache'); return sb('products?id=eq.'+id, { method:'DELETE', prefer:'return=minimal' }); },
 
   // Orders
   getOrders:      ()         => sb('orders?order=created_at.desc'),
