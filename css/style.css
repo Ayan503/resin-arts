@@ -614,3 +614,6 @@ body::-webkit-scrollbar {
   height: 0;
   display: none;
 }
+*::-webkit-scrollbar {
+  display: none;
+}
