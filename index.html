@@ -3,220 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resin Aura By Priya Chakraborty</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{--cream:#fdf6ee;--warm:#f5ebe0;--brown:#5a3e2b;--amber:#c06c2d;--amber-light:#e8956d;--amber-pale:#fde8d8;--text:#2d1f14;--muted:#8c7060;--shadow:0 4px 24px rgba(90,62,43,.10);--shadow-hover:0 8px 32px rgba(90,62,43,.18);}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;}
-header{background:var(--brown);padding:0 20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.15);}
-.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:62px;}
-.logo{font-family:'Playfair Display',serif;font-size:22px;color:var(--cream);}
-.logo span{color:var(--amber-light);font-style:italic;}
-.header-actions{display:flex;align-items:center;gap:10px;}
-.btn-icon{background:none;border:none;cursor:pointer;color:var(--cream);font-size:22px;position:relative;padding:6px;transition:transform .2s;}
-.btn-icon:hover{transform:scale(1.12);}
-.cart-badge{position:absolute;top:0;right:0;background:var(--amber-light);color:#fff;font-size:10px;font-weight:700;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;}
-.user-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:var(--cream);border-radius:20px;padding:6px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;}
-.user-btn:hover{background:rgba(255,255,255,.22);}
-.hero{background:linear-gradient(135deg,var(--brown) 0%,#7a5540 60%,var(--amber) 100%);padding:48px 20px 40px;text-align:center;color:#fff;}
-.hero h1{font-family:'Playfair Display',serif;font-size:clamp(28px,6vw,52px);font-weight:700;line-height:1.15;margin-bottom:10px;}
-.hero h1 em{color:var(--amber-light);font-style:italic;}
-.hero p{font-size:15px;opacity:.85;max-width:480px;margin:0 auto 24px;}
-.hero-badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
-.badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:20px;padding:5px 14px;font-size:12px;}
-.cat-bar{background:#fff;border-bottom:1px solid var(--warm);padding:0 20px;overflow-x:auto;white-space:nowrap;}
-.cat-bar::-webkit-scrollbar{height:3px;}
-.cat-bar::-webkit-scrollbar-thumb{background:var(--amber-pale);}
-.cat-inner{display:inline-flex;gap:4px;padding:10px 0;}
-.cat-btn{background:none;border:1.5px solid transparent;color:var(--muted);border-radius:20px;padding:6px 16px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:all .18s;white-space:nowrap;}
-.cat-btn:hover{color:var(--amber);border-color:var(--amber-pale);}
-.cat-btn.active{background:var(--amber);color:#fff;border-color:var(--amber);}
-.search-bar{max-width:1100px;margin:0 auto;padding:18px 20px 0;}
-.search-input-wrap{position:relative;}
-.search-input{width:100%;padding:12px 16px 12px 44px;border:1.5px solid #e8d8c8;border-radius:12px;font-size:14px;font-family:'DM Sans',sans-serif;background:#fff;color:var(--text);transition:border-color .2s;}
-.search-input:focus{outline:none;border-color:var(--amber);}
-.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--muted);pointer-events:none;}
-.products-section{max-width:1100px;margin:0 auto;padding:20px;}
-.section-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--brown);margin-bottom:16px;}
-.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;}
-@media(min-width:600px){.products-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));}}
-.product-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:var(--shadow);transition:transform .22s,box-shadow .22s;cursor:pointer;}
-.product-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover);}
-.product-img-wrap{position:relative;overflow:hidden;aspect-ratio:1;background:var(--warm);}
-.product-img{width:100%;height:100%;object-fit:cover;transition:transform .35s;}
-.product-card:hover .product-img{transform:scale(1.06);}
-.product-cat-tag{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.92);color:var(--amber);font-size:10px;font-weight:600;border-radius:8px;padding:3px 8px;text-transform:uppercase;letter-spacing:.5px;}
-.variant-tag{position:absolute;top:8px;right:8px;background:var(--amber);color:#fff;font-size:10px;font-weight:700;border-radius:8px;padding:3px 8px;}
-.product-info{padding:12px;}
-.product-name{font-weight:600;font-size:14px;margin-bottom:4px;line-height:1.3;}
-.product-desc{font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.product-footer{display:flex;align-items:center;justify-content:space-between;}
-.product-price{font-weight:700;color:var(--amber);font-size:15px;}
-.price-from{font-size:10px;color:var(--muted);font-weight:400;}
-.btn-cart{background:var(--amber-pale);color:var(--amber);border:none;border-radius:8px;padding:5px 10px;font-size:18px;cursor:pointer;transition:background .18s;line-height:1;}
-.btn-cart:hover{background:var(--amber);color:#fff;}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;}
-.overlay.show{opacity:1;pointer-events:all;}
-.drawer{position:fixed;right:-420px;top:0;bottom:0;width:min(420px,100vw);background:#fff;z-index:300;box-shadow:-8px 0 40px rgba(0,0,0,.15);transition:right .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;}
-.drawer.show{right:0;}
-.drawer-header{padding:20px;border-bottom:1px solid var(--warm);display:flex;align-items:center;justify-content:space-between;}
-.drawer-header h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--brown);}
-.btn-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);line-height:1;padding:0;}
-.drawer-body{flex:1;overflow-y:auto;padding:16px;}
-.cart-empty{text-align:center;padding:60px 20px;color:var(--muted);}
-.cart-empty .empty-icon{font-size:48px;margin-bottom:12px;}
-.cart-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--warm);}
-.cart-item-img{width:64px;height:64px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--warm);}
-.cart-item-info{flex:1;}
-.cart-item-name{font-weight:600;font-size:14px;margin-bottom:2px;}
-.cart-item-variant{font-size:11px;color:var(--amber);font-weight:600;margin-bottom:4px;}
-.cart-item-price{color:var(--amber);font-weight:700;font-size:14px;}
-.cart-item-qty{display:flex;align-items:center;gap:8px;margin-top:6px;}
-.qty-btn{background:var(--warm);border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:14px;font-weight:700;color:var(--brown);transition:background .15s;}
-.qty-btn:hover{background:var(--amber);color:#fff;}
-.qty-num{font-size:14px;font-weight:600;min-width:20px;text-align:center;}
-.btn-remove{background:none;border:none;color:#e74c3c;cursor:pointer;font-size:18px;margin-left:auto;padding:4px;}
-.drawer-footer{padding:16px;border-top:1px solid var(--warm);}
-.cart-total{display:flex;justify-content:space-between;font-size:16px;font-weight:700;margin-bottom:6px;color:var(--brown);}
-.cart-delivery-note{font-size:11px;color:var(--muted);text-align:center;margin-bottom:12px;padding:8px;background:#fff8e1;border-radius:8px;}
-.btn-checkout{width:100%;padding:14px;background:var(--amber);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;}
-.btn-checkout:hover{background:#a85a24;}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .22s;}
-.modal-overlay.show{opacity:1;pointer-events:all;}
-.modal-box{background:#fff;border-radius:20px;width:100%;max-width:480px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.2);transform:translateY(24px);transition:transform .25s;max-height:90vh;overflow-y:auto;}
-.modal-overlay.show .modal-box{transform:translateY(0);}
-.modal-box h2{font-family:'Playfair Display',serif;font-size:22px;color:var(--brown);margin-bottom:6px;}
-.modal-product-name{color:var(--amber);font-weight:600;font-size:15px;margin-bottom:16px;}
-.variant-section{margin-bottom:16px;}
-.variant-label{font-size:13px;font-weight:600;color:var(--brown);margin-bottom:8px;}
-.variant-options{display:flex;gap:8px;flex-wrap:wrap;}
-.variant-btn{border:2px solid #e0d0c0;background:#fff;border-radius:10px;padding:8px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;transition:all .18s;text-align:center;min-width:90px;}
-.variant-btn:hover{border-color:var(--amber);}
-.variant-btn.selected{border-color:var(--amber);background:var(--amber-pale);font-weight:600;}
-.variant-btn .v-name{display:block;font-weight:600;font-size:13px;}
-.variant-btn .v-price{display:block;color:var(--amber);font-size:12px;font-weight:700;}
-.order-summary{background:var(--cream);border-radius:12px;padding:14px;margin-bottom:14px;}
-.order-summary-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px;}
-.order-summary-row.total{font-weight:700;font-size:16px;color:var(--amber);border-top:1px solid #e8d8c8;padding-top:8px;margin-top:4px;}
-.delivery-notice{background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px 14px;font-size:12px;color:#7a5f00;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start;line-height:1.5;}
-.booking-note{background:var(--amber-pale);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--brown);margin-bottom:14px;line-height:1.5;}
-.booking-note strong{display:block;margin-bottom:3px;color:var(--amber);}
-.form-group{margin-bottom:14px;}
-.form-group label{display:block;font-size:13px;font-weight:500;color:var(--brown);margin-bottom:5px;}
-.form-group input,.form-group textarea{width:100%;padding:11px 14px;border:1.5px solid #e0d0c0;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);transition:border-color .2s;}
-.form-group input:focus,.form-group textarea:focus{outline:none;border-color:var(--amber);}
-.form-group textarea{resize:none;height:72px;}
-.modal-actions{display:flex;gap:10px;}
-.btn-cancel{flex:1;padding:12px;background:var(--warm);color:var(--brown);border:none;border-radius:10px;cursor:pointer;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;}
-.btn-place-order{flex:2;padding:12px;background:var(--amber);color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;transition:background .2s;}
-.btn-place-order:hover{background:#a85a24;}
-.auth-tabs{display:flex;margin-bottom:20px;border-bottom:2px solid var(--warm);}
-.auth-tab{flex:1;padding:10px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;color:var(--muted);border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .18s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;}
-.auth-tab.active{color:var(--amber);border-bottom-color:var(--amber);}
-.product-detail-grid{display:grid;grid-template-columns:1fr;gap:16px;}
-@media(min-width:480px){.product-detail-grid{grid-template-columns:1fr 1fr;}}
-.product-detail-img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;background:var(--warm);}
-.product-detail-info{display:flex;flex-direction:column;gap:10px;}
-.product-detail-name{font-family:'Playfair Display',serif;font-size:20px;color:var(--brown);}
-.product-detail-price{font-size:22px;font-weight:700;color:var(--amber);}
-.product-detail-desc{font-size:14px;color:var(--muted);line-height:1.6;}
-.btn-buynow{width:100%;padding:13px;background:var(--amber);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;margin-bottom:8px;}
-.btn-buynow:hover{background:#a85a24;}
-.btn-addcart-detail{width:100%;padding:13px;background:var(--amber-pale);color:var(--amber);border:1.5px solid var(--amber);border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
-.btn-addcart-detail:hover{background:var(--amber);color:#fff;}
-
-/* ORDER TRACKING */
-.tracking-box{max-width:560px;}
-.order-track-card{background:#fff;border:1.5px solid var(--warm);border-radius:14px;padding:16px;margin-bottom:14px;}
-.order-track-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:4px;}
-.order-track-id{font-size:11px;font-weight:700;color:var(--muted);}
-.order-track-date{font-size:11px;color:var(--muted);}
-.order-track-total{font-size:15px;font-weight:700;color:var(--amber);}
-.order-track-items{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;}
-/* Amazon-style status bar */
-.status-bar-wrap{position:relative;margin:8px 0 16px;}
-.status-bar-bg{position:absolute;top:13px;left:20px;right:20px;height:2px;background:#e0d0c0;z-index:0;}
-.status-bar-fill{position:absolute;top:13px;left:20px;height:2px;background:var(--amber);z-index:1;transition:width .5s ease;}
-.status-steps{display:flex;position:relative;z-index:2;}
-.status-step{flex:1;display:flex;flex-direction:column;align-items:center;}
-.step-dot{width:28px;height:28px;border-radius:50%;border:2px solid #e0d0c0;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;margin-bottom:6px;transition:all .3s;}
-.step-dot.done{background:var(--amber);border-color:var(--amber);color:#fff;}
-.step-dot.current{background:#fff;border-color:var(--amber);box-shadow:0 0 0 4px var(--amber-pale);}
-.step-dot.cancelled{background:#e74c3c;border-color:#e74c3c;color:#fff;}
-.step-label{font-size:10px;font-weight:600;color:#ccc;text-align:center;line-height:1.3;}
-.step-label.done,.step-label.current{color:var(--brown);}
-.step-label.cancelled{color:#e74c3c;}
-.cancelled-bar{background:#fde8e8;border-radius:10px;padding:12px;text-align:center;color:#c0392b;font-weight:600;font-size:14px;}
-.order-log-section{margin-top:12px;border-top:1px solid var(--warm);padding-top:10px;}
-.order-log-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
-.log-entry{display:flex;gap:8px;font-size:12px;color:var(--muted);margin-bottom:6px;align-items:flex-start;}
-.log-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-top:3px;}
-.log-action{font-weight:600;color:var(--text);}
-
-.order-success{text-align:center;padding:20px 0;}
-.success-icon{font-size:56px;margin-bottom:16px;}
-.autofill-note{background:#e8f8f0;border-radius:10px;padding:9px 13px;font-size:12px;color:#2d7a4f;margin-bottom:14px;}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#2d7a4f;color:#fff;border-radius:12px;padding:12px 22px;font-size:14px;font-weight:500;z-index:9999;transition:transform .3s,opacity .3s;opacity:0;white-space:nowrap;}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
-footer{background:var(--brown);color:rgba(255,255,255,.8);text-align:center;padding:24px 20px;margin-top:40px;font-size:13px;}
-footer strong{color:var(--amber-light);font-family:'Playfair Display',serif;}
-.no-products{text-align:center;padding:60px 20px;color:var(--muted);grid-column:1/-1;}
-</style>
+<meta name="description" content="Resin Aura By Priya by Priya — Handmade resin jewellery, home décor, frames & gifts. Custom orders welcome.">
+<title>Resin Aura By Priya — Handmade with Love</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+<!-- ── HEADER ── -->
 <header>
   <div class="header-inner">
-    <div class="logo">Resin <span>Aura By Priya Chakraborty</span></div>
+    <a class="logo" href="#top">Resin <span>Aura By Priya Chakraborty</span></a>
     <div class="header-actions">
-      <button class="btn-icon" onclick="openCart()">🛒<span class="cart-badge" id="cartBadge">0</span></button>
+      <button class="btn-icon" onclick="openCart()" aria-label="Cart">
+        🛒<span class="cart-badge" id="cartBadge">0</span>
+      </button>
       <button class="user-btn" id="userBtn" onclick="handleUserBtn()">Login</button>
     </div>
   </div>
 </header>
 
-<div class="hero">
-  <h1>Handcrafted with <em>Love & Resin</em></h1>
-  <p>Unique, custom-made resin art pieces — jewellery, home décor, gifts & more.</p>
-  <div class="hero-badges">
-    <span class="badge">✨ Handmade</span>
-    <span class="badge">🎁 Custom Orders</span>
-    <span class="badge">🚀 Made to Order</span>
+<!-- ── HERO ── -->
+<section class="hero" id="top">
+  <div class="hero-content">
+    <h1>Handcrafted with <em>Love & Resin</em></h1>
+    <p>Unique, custom-made resin art pieces — jewellery, home décor, frames & gifts. Every piece is made with heart, just for you.</p>
+    <div class="hero-badges">
+      <span class="badge">✨ 100% Handmade</span>
+      <span class="badge">🎁 Custom Orders</span>
+      <span class="badge">🚀 Made to Order</span>
+      <span class="badge">💛 With Love</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── CATEGORY BAR ── -->
+<div class="cat-bar"><div class="cat-inner" id="catBar"></div></div>
+
+<!-- ── SEARCH ── -->
+<div class="search-bar">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-input" id="searchInput" placeholder="Search products, categories..." oninput="renderProducts()">
   </div>
 </div>
 
-<div class="cat-bar"><div class="cat-inner" id="catBar"></div></div>
-<div class="search-bar"><div class="search-input-wrap"><span class="search-icon">🔍</span><input type="text" class="search-input" placeholder="Search products..." id="searchInput" oninput="renderProducts()"></div></div>
-
-<div class="products-section">
+<!-- ── PRODUCTS ── -->
+<section class="products-section">
   <div class="section-title" id="sectionTitle">All Products</div>
-  <div class="products-grid" id="productsGrid"><div class="no-products"><div style="font-size:40px">⏳</div><p>Loading products...</p></div></div>
+  <div class="products-grid" id="productsGrid">
+    <div class="no-products"><div style="font-size:44px;margin-bottom:12px">⏳</div><p>Loading products...</p></div>
+  </div>
+</section>
+
+<!-- ── ABOUT SECTION ── -->
+<section class="about-section" id="about">
+  <div class="about-inner">
+    <div style="text-align:center">
+      <div class="about-avatar">🎨</div>
+      <div class="about-stats">
+        <div class="about-stat"><div class="num" id="productCount">...</div><div class="lbl">Products</div></div>
+        <div class="about-stat"><div class="num">100%</div><div class="lbl">Handmade</div></div>
+        <div class="about-stat"><div class="num">❤️</div><div class="lbl">With Love</div></div>
+      </div>
+    </div>
+    <div class="about-text">
+      <h2>Hi, I'm <span>Priya</span> 👋</h2>
+      <div class="about-tagline">✨ "Where every drop of resin tells a story"</div>
+      <p>Welcome to my little world of resin art! I handcraft each piece with passion and precision — from delicate jewellery to stunning home décor. Every item is unique, made to order, and created with love.</p>
+      <p>Whether you're looking for a personal gift, a home accent, or something custom — I'd love to create something special just for you!</p>
+     <div class="about-location">
+
+    <iframe 
+    src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d2189.3930815962476!2d88.40761784226767!3d22.649851524583667!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sin!4v1778393486513!5m2!1sen!2sin"
+    width="100%"
+    height="240"
+    style="border:0;border-radius:16px;"
+    allowfullscreen=""
+    loading="lazy"
+    referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+
+  <div style="margin-top:10px;font-size:14px;color:var(--muted)">
+    📍 Near Dum Dum Cantonment, Kolkata
+  </div>
+
+</div>
+      </div>
+      <div class="about-contact">
+        <a class="contact-btn whatsapp" href="https://wa.me/919330392779?text=Hi%20Priya!%20I%20saw%20your%20Resin%20Arts%20website%20and%20I'm%20interested%20in%20placing%20an%20order." target="_blank">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </a>
+        <a class="contact-btn phone" href="tel:+919330392779">
+          📞 Call Us
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── REVIEWS SECTION ── -->
+<section class="reviews-section" id="reviewsSection">
+  <div class="reviews-inner">
+    <div class="reviews-header">
+      <div>
+        <h2 class="reviews-title">What our customers say 💬</h2>
+        <div id="avgRating" class="avg-rating">⭐ Loading...</div>
+      </div>
+      <button class="btn-write-review" onclick="openReviewModal()">✍️ Write a Review</button>
+    </div>
+    <div class="reviews-grid" id="reviewsGrid">
+      <div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1"><div style="font-size:40px">⏳</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEW MODAL -->
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal-box" id="reviewModalBox"></div>
 </div>
 
-<footer><strong>Resin Aura By Priya Chakraborty</strong><br>Handmade with love 💛 | Delivery charges applicable based on location</footer>
+<!-- ── FOOTER ── -->
+<footer>
+  <strong>Resin Aura</strong> by Priya Chakraborty<br>
+  Handmade with love 💛 | Durganagar, Cantonment, Kolkata<br>
+  <small>Delivery charges applicable based on location • Custom orders welcome</small>
+</footer>
 
+<!-- ── OVERLAY ── -->
 <div class="overlay" id="overlay" onclick="closeAll()"></div>
 
-<!-- CART -->
+<!-- ── CART DRAWER ── -->
 <div class="drawer" id="cartDrawer">
-  <div class="drawer-header"><h2>🛒 Your Cart</h2><button class="btn-close" onclick="closeCart()">×</button></div>
+  <div class="drawer-header">
+    <h2>🛒 Your Cart</h2>
+    <button class="btn-close" onclick="closeCart()">×</button>
+  </div>
   <div class="drawer-body" id="cartBody"></div>
   <div class="drawer-footer" id="cartFooter" style="display:none">
     <div class="cart-total"><span>Subtotal</span><span id="cartTotal">₹0</span></div>
-    <div class="cart-delivery-note">🚚 Delivery charges based on your location — confirmed before dispatch</div>
+    <div class="cart-delivery-note">🚚 Delivery charges based on location — confirmed before dispatch</div>
     <button class="btn-checkout" onclick="checkoutCart()">Place Order →</button>
   </div>
 </div>
 
-<!-- ORDER MODAL -->
-<div class="modal-overlay" id="orderModal"><div class="modal-box" id="orderModalBox"></div></div>
+<!-- ── ORDER MODAL ── -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal-box" id="orderModalBox"></div>
+</div>
 
-<!-- AUTH MODAL -->
+<!-- ── AUTH MODAL ── -->
 <div class="modal-overlay" id="authModal">
   <div class="modal-box">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <h2>Welcome</h2><button class="btn-close" onclick="closeAuth()">×</button>
+      <h2>Welcome 👋</h2>
+      <button class="btn-close" onclick="closeAuth()">×</button>
     </div>
     <div class="auth-tabs">
       <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
@@ -226,482 +167,29 @@ footer strong{color:var(--amber-light);font-family:'Playfair Display',serif;}
   </div>
 </div>
 
-<!-- DETAIL MODAL -->
-<div class="modal-overlay" id="detailModal"><div class="modal-box" id="detailModalBox"></div></div>
+<!-- ── PRODUCT DETAIL MODAL ── -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box" id="detailModalBox"></div>
+</div>
 
-<!-- TRACKING MODAL -->
-<div class="modal-overlay" id="trackModal"><div class="modal-box tracking-box" id="trackModalBox"></div></div>
+<!-- ── ORDER TRACKING MODAL ── -->
+<div class="modal-overlay" id="trackModal">
+  <div class="modal-box tracking-box" id="trackModalBox"></div>
+</div>
 
+<!-- ── PROFILE MODAL ── -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal-box tracking-box" id="profileModalBox"></div>
+</div>
+
+<!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
-<script>
-const SB_URL='https://qylcnaygpamgzdaokdku.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5bGNuYXlncGFtZ3pkYW9rZGt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NTQyNjgsImV4cCI6MjA5MzMzMDI2OH0._JDbEt1gcUpV4TgZpUJrPuEw0EGnF-j6chmCMyOxlGE';
-const ADMIN_KEY    = 'resign_admin';
-async function sb(path,opt={}){
-  const r=await fetch(SB_URL+'/rest/v1/'+path,{
-    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':opt.prefer||'return=representation',...(opt.headers||{})},
-    ...opt
-  });
-  if(!r.ok){const e=await r.text();throw new Error(e);}
-  const t=await r.text();return t?JSON.parse(t):[];
-}
+<!-- ── SCRIPTS (order matters) ── -->
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script src="js/reviews.js"></script>
 
-let allProducts=[],currentCat='all',currentOrderProduct=null;
-const SS='resign_session',CK='resign_cart';
-const getSession=()=>{try{return JSON.parse(localStorage.getItem(SS))||null;}catch{return null;}};
-const saveSession=d=>localStorage.setItem(SS,JSON.stringify(d));
-const getCart=()=>{try{return JSON.parse(localStorage.getItem(CK))||[];}catch{return[];}};
-const saveCart=d=>localStorage.setItem(CK,JSON.stringify(d));
-
-/* ─── PRODUCTS ─── */
-async function loadProducts(){
-  try{
-    let d=await sb('products?order=id.asc');
-    if(!d||!d.length){await seedProducts();d=await sb('products?order=id.asc');}
-    allProducts=d;
-  }catch(e){console.error(e);allProducts=[];}
-}
-
-async function seedProducts(){
-  const list=[
-    {name:"Resin Wall Clock",price:1800,category:"Home Décor",description:"Handcrafted resin wall clock with beautiful patterns. A perfect statement piece for your home.",image:"uploads/Resin_Wall_Clock.jpeg",variants:[]},
-    {name:"Ocean Frame",price:1200,category:"Frames",description:"Stunning ocean-inspired resin photo frame with blue and gold leaf accents.",image:"uploads/Ocean frame.jpeg",variants:[]},
-    {name:"Dried Flower Resin Frame",price:1500,category:"Frames",description:"Elegant frame with real dried flowers preserved in clear resin.",image:"uploads/Dried Flower Resin Frame.jpeg",variants:[]},
-    {name:"Resin Flower Frame",price:1400,category:"Frames",description:"Beautiful resin frame featuring delicate flower patterns. Perfect for gifting.",image:"uploads/Resin Flower frame.jpeg",variants:[]},
-    {name:"Couple Frame",price:1600,category:"Frames",description:"A romantic resin couple frame — ideal wedding or anniversary gift.",image:"uploads/Couple frame.jpeg",variants:[]},
-    {name:"Wedding Photo Frame",price:1800,category:"Frames",description:"Exquisite wedding photo frame with resin floral border.",image:"uploads/Wedding_Photo_Frame.jpeg",variants:[]},
-    {name:"Birthday Frame",price:1300,category:"Frames",description:"Colourful birthday frame crafted with resin and glitter.",image:"uploads/Birthday frame.jpeg",variants:[]},
-    {name:"Anniversary Frame",price:1500,category:"Frames",description:"Celebrate love with this beautiful anniversary resin frame.",image:"uploads/Anniversary.jpeg",variants:[]},
-    {name:"Photo Frame",price:1100,category:"Frames",description:"Classic handmade resin photo frame with unique textures.",image:"uploads/Photo frame.jpeg",variants:[]},
-    {name:"Bracelet",price:650,category:"Jewellery",description:"Lightweight resin bracelet with floral inclusions. Elegant and unique.",image:"uploads/Bracelet.jpeg",variants:[]},
-    {name:"Bracelet (Gold Leaf)",price:750,category:"Jewellery",description:"Handmade resin bracelet with shimmer gold leaf inclusions.",image:"uploads/Bracelet1.jpeg",variants:[]},
-    {name:"Bracelet (Floral)",price:700,category:"Jewellery",description:"Delicate resin bracelet featuring preserved flower petals.",image:"uploads/Bracelet2.jpeg",variants:[]},
-    {name:"Bangles",price:800,category:"Jewellery",description:"Set of handmade resin bangles in vibrant colours.",image:"uploads/Bangles.jpeg",variants:[]},
-    {name:"Earrings",price:550,category:"Jewellery",description:"Lightweight resin drop earrings with flower inclusions.",image:"uploads/Earrings.jpeg",variants:[]},
-    {name:"Earrings (Coloured)",price:600,category:"Jewellery",description:"Vibrant handmade resin earrings with multi-colour swirls.",image:"uploads/Earrings1.jpeg",variants:[]},
-    {name:"Resin Pendant",price:700,category:"Jewellery",description:"Beautifully crafted resin pendant with floral design.",image:"uploads/Resin Pendant.jpeg",variants:[]},
-    {name:"Pendent",price:650,category:"Jewellery",description:"Handmade resin pendant with unique abstract design.",image:"uploads/pendent.jpeg",variants:[]},
-    {name:"Ring",price:500,category:"Jewellery",description:"Handcrafted resin ring with floral inclusion. Adjustable.",image:"uploads/Ring.jpeg",variants:[]},
-    {name:"Name Keychain",price:400,category:"Keychains",description:"Personalised resin keychain with your name.",image:"uploads/Name keychain.jpeg",variants:[]},
-    {name:"Resin Letter Keychain",price:450,category:"Keychains",description:"Handmade resin initial letter keychain.",image:"uploads/Resin Letter Keychain.jpeg",variants:[]},
-    {name:"Key Holder",price:600,category:"Home Décor",description:"Resin wall key holder with multiple hooks.",image:"uploads/Key holder.jpeg",variants:[]},
-    {name:"Resin Tray",price:1200,category:"Home Décor",description:"Elegant resin serving tray with marble-like swirl pattern.",image:"uploads/Resin Tray.jpeg",variants:[]},
-    {name:"Coaster",price:700,category:"Home Décor",description:"Set of resin coasters with floral and marble patterns.",image:"uploads/Coaster.jpeg",variants:[]},
-    {name:"Pen Stand",price:800,category:"Home Décor",description:"Handmade resin pen stand with elegant design.",image:"uploads/Pen stand.jpeg",variants:[]},
-    {name:"Ashtray",price:900,category:"Home Décor",description:"Unique handcrafted resin ashtray.",image:"uploads/Ashtray.jpeg",variants:[]},
-    {name:"Resin Table Top",price:3500,category:"Home Décor",description:"Premium resin table top with stunning geode-like design.",image:"uploads/Resin table top.jpeg",variants:[]},
-    {name:"Resin Initial Letters",price:600,category:"Home Décor",description:"Decorative resin initial letters.",image:"uploads/Resin Initial Letters.jpeg",variants:[]},
-    {name:"Name Plate",price:850,category:"Home Décor",description:"Custom resin name plate for your home or office.",image:"uploads/Name plate.jpeg",variants:[]},
-    {name:"Gold Leaf Resin",price:2200,category:"Home Décor",description:"Premium gold leaf resin art piece.",image:"uploads/Gold leaf resin.jpeg",variants:[]},
-    {name:"Book Mark",price:199,category:"Gifts",description:"Handmade resin bookmark with floral design.",image:"uploads/Book mark.jpeg",variants:[{label:"Normal",price:199},{label:"With Tassel",price:249}]},
-  ];
-  for(const p of list){try{await sb('products',{method:'POST',body:JSON.stringify(p)});}catch(e){}}
-}
-
-/* ─── CATEGORIES ─── */
-function buildCatBar(){
-  const cats=['all',...new Set(allProducts.map(p=>p.category))];
-  document.getElementById('catBar').innerHTML=cats.map(c=>
-    `<button class="cat-btn${c===currentCat?' active':''}" onclick="filterCat('${c}',this)">${c==='all'?'All':c}</button>`
-  ).join('');
-}
-function filterCat(cat,btn){
-  currentCat=cat;
-  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
-  btn&&btn.classList.add('active');
-  document.getElementById('sectionTitle').textContent=cat==='all'?'All Products':cat;
-  renderProducts();
-}
-
-/* ─── RENDER ─── */
-function renderProducts(){
-  const q=document.getElementById('searchInput').value.toLowerCase();
-  let list=allProducts;
-  if(currentCat!=='all') list=list.filter(p=>p.category===currentCat);
-  if(q) list=list.filter(p=>p.name.toLowerCase().includes(q)||(p.description||'').toLowerCase().includes(q)||p.category.toLowerCase().includes(q));
-  const grid=document.getElementById('productsGrid');
-  if(!list.length){grid.innerHTML=`<div class="no-products"><div style="font-size:40px">🔍</div><p>No products found</p></div>`;return;}
-  grid.innerHTML=list.map(p=>{
-    const vars=p.variants||[];
-    const minP=vars.length?Math.min(...vars.map(v=>v.price)):p.price;
-    const priceHtml=vars.length?`<span class="price-from">from </span>₹${minP}`:`₹${p.price}`;
-    return `<div class="product-card" onclick="openDetail(${p.id})">
-      <div class="product-img-wrap">
-        <img class="product-img" src="${p.image||''}" alt="${p.name}" onerror="this.style.display='none'">
-        <span class="product-cat-tag">${p.category}</span>
-        ${vars.length>1?`<span class="variant-tag">${vars.length} options</span>`:''}
-      </div>
-      <div class="product-info">
-        <div class="product-name">${p.name}</div>
-        <div class="product-desc">${p.description||''}</div>
-        <div class="product-footer">
-          <span class="product-price">${priceHtml}</span>
-          <button class="btn-cart" onclick="event.stopPropagation();quickAdd(${p.id})">+🛒</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ─── DETAIL ─── */
-function openDetail(id){
-  const p=allProducts.find(x=>x.id===id);if(!p)return;
-  const vars=p.variants||[];
-  document.getElementById('detailModalBox').innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <span style="background:var(--amber-pale);color:var(--amber);font-size:10px;font-weight:600;border-radius:8px;padding:3px 10px;text-transform:uppercase">${p.category}</span>
-      <button class="btn-close" onclick="closeDetail()">×</button>
-    </div>
-    <div class="product-detail-grid">
-      <img class="product-detail-img" src="${p.image||''}" alt="${p.name}" onerror="this.style.background='var(--warm)'">
-      <div class="product-detail-info">
-        <div class="product-detail-name">${p.name}</div>
-        <div class="product-detail-price" id="dPrice">₹${vars.length?vars[0].price:p.price}</div>
-        <div class="product-detail-desc">${p.description||''}</div>
-        ${vars.length?`<div class="variant-section">
-          <div class="variant-label">Choose Option:</div>
-          <div class="variant-options">${vars.map((v,i)=>`
-            <button class="variant-btn${i===0?' selected':''}" onclick="pickVariant(this,${v.price})">
-              <span class="v-name">${v.label}</span>
-              <span class="v-price">₹${v.price}</span>
-            </button>`).join('')}
-          </div>
-        </div>`:''}
-        <button class="btn-buynow" onclick="closeDetail();openOrder(${p.id})">Buy Now</button>
-        <button class="btn-addcart-detail" onclick="quickAdd(${p.id});closeDetail()">Add to Cart 🛒</button>
-      </div>
-    </div>`;
-  document.getElementById('detailModal').classList.add('show');
-  document.getElementById('overlay').classList.add('show');
-}
-function pickVariant(btn,price){
-  document.querySelectorAll('.variant-btn').forEach(b=>b.classList.remove('selected'));
-  btn.classList.add('selected');
-  document.getElementById('dPrice').textContent='₹'+price;
-}
-function closeDetail(){document.getElementById('detailModal').classList.remove('show');document.getElementById('overlay').classList.remove('show');}
-
-/* ─── CART ─── */
-function quickAdd(id){
-  const p=allProducts.find(x=>x.id===id);
-  if(!p) return;
-
-  const vars = p.variants || [];
-
-  // multiple variants থাকলে selected check কর
-  if(vars.length > 1){
-    const selectedBtn = document.querySelector('.variant-btn.selected');
-
-    if(!selectedBtn){
-      openDetail(id);
-      showToast('Please choose an option 👆');
-      return;
-    }
-
-    const variant = {
-      label: selectedBtn.querySelector('.v-name').textContent,
-      price: parseInt(selectedBtn.querySelector('.v-price').textContent.replace('₹',''))
-    };
-
-    addToCart(id, variant);
-    return;
-  }
-
-  // single or no variant
-  addToCart(id, vars.length===1 ? vars[0] : null);
-}
-function addToCart(id,variant=null){
-  const p=allProducts.find(x=>x.id===id);if(!p)return;
-  let cart=getCart();
-  const key=`${id}_${variant?variant.label:'default'}`;
-  const ex=cart.find(c=>c.key===key);
-  if(ex)ex.qty++;
-  else cart.push({key,id,qty:1,variantLabel:variant?variant.label:null,price:variant?variant.price:p.price});
-  saveCart(cart);updateCartBadge();
-  showToast(`${p.name}${variant?' ('+variant.label+')':''} added 🛒`);
-}
-function updateCartBadge(){document.getElementById('cartBadge').textContent=getCart().reduce((s,c)=>s+c.qty,0);}
-function openCart(){renderCart();document.getElementById('cartDrawer').classList.add('show');document.getElementById('overlay').classList.add('show');}
-function closeCart(){document.getElementById('cartDrawer').classList.remove('show');document.getElementById('overlay').classList.remove('show');}
-function renderCart(){
-  const cart=getCart(),body=document.getElementById('cartBody'),footer=document.getElementById('cartFooter');
-  if(!cart.length){body.innerHTML=`<div class="cart-empty"><div class="empty-icon">🛒</div><p>Your cart is empty</p></div>`;footer.style.display='none';return;}
-  let total=0;
-  body.innerHTML=cart.map(c=>{
-    const p=allProducts.find(x=>x.id===c.id);if(!p)return'';
-    total+=c.price*c.qty;
-    return `<div class="cart-item">
-      <img class="cart-item-img" src="${p.image||''}" alt="${p.name}" onerror="this.style.display='none'">
-      <div class="cart-item-info">
-        <div class="cart-item-name">${p.name}</div>
-        ${c.variantLabel?`<div class="cart-item-variant">${c.variantLabel}</div>`:''}
-        <div class="cart-item-price">₹${c.price} × ${c.qty}</div>
-        <div class="cart-item-qty">
-          <button class="qty-btn" onclick="changeQty('${c.key}',-1)">−</button>
-          <span class="qty-num">${c.qty}</span>
-          <button class="qty-btn" onclick="changeQty('${c.key}',1)">+</button>
-        </div>
-      </div>
-      <button class="btn-remove" onclick="rmCart('${c.key}')">🗑</button>
-    </div>`;
-  }).join('');
-  document.getElementById('cartTotal').textContent='₹'+total;
-  footer.style.display='block';
-}
-function changeQty(key,d){
-  let cart=getCart(),item=cart.find(c=>c.key===key);if(!item)return;
-  item.qty+=d;if(item.qty<=0)cart=cart.filter(c=>c.key!==key);
-  saveCart(cart);updateCartBadge();renderCart();
-}
-function rmCart(key){saveCart(getCart().filter(c=>c.key!==key));updateCartBadge();renderCart();}
-function checkoutCart(){
-  const cart=getCart();if(!cart.length)return;
-  let total=0;
-  const items=cart.map(c=>{const p=allProducts.find(x=>x.id===c.id);total+=c.price*c.qty;return{name:p.name,variant:c.variantLabel,price:c.price,qty:c.qty};});
-  currentOrderProduct={isCart:true,items,total};
-  closeCart();showOrderModal();
-}
-
-/* ─── ORDER ─── */
-function openOrder(id){
-  const p=allProducts.find(x=>x.id===id);if(!p)return;
-  const vars=p.variants||[];
-  let variant=null;
-  if(vars.length){
-    const sel=document.querySelector('.variant-btn.selected');
-    variant=sel?{label:sel.querySelector('.v-name').textContent,price:parseInt(sel.querySelector('.v-price').textContent.replace('₹',''))}:vars[0];
-  }
-  currentOrderProduct={isCart:false,product:p,variant,total:variant?variant.price:p.price};
-  showOrderModal();
-}
-function showOrderModal(){
-  const s=getSession();
-  let summary='';
-  if(currentOrderProduct.isCart){
-    summary=currentOrderProduct.items.map(i=>`<div class="order-summary-row"><span>${i.name}${i.variant?' ('+i.variant+')':''} ×${i.qty}</span><span>₹${i.price*i.qty}</span></div>`).join('')+
-      `<div class="order-summary-row total"><span>Subtotal</span><span>₹${currentOrderProduct.total}</span></div>`;
-  }else{
-    const p=currentOrderProduct.product,v=currentOrderProduct.variant;
-    summary=`<div class="order-summary-row"><span>${p.name}${v?' ('+v.label+')':''}</span><span>₹${currentOrderProduct.total}</span></div>
-      <div class="order-summary-row total"><span>Total</span><span>₹${currentOrderProduct.total}</span></div>`;
-  }
-  document.getElementById('orderModalBox').innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <h2>Place Your Order</h2><button class="btn-close" onclick="closeOrder()">×</button>
-    </div>
-    <div class="modal-product-name">${currentOrderProduct.isCart?'Cart Order':currentOrderProduct.product.name}</div>
-    <div class="order-summary">${summary}</div>
-    <div class="delivery-notice">🚚 <span><strong>Delivery charges not included.</strong> Charges will be communicated based on your location before dispatch.</span></div>
-    <div class="booking-note"><strong>📦 How it works</strong>We'll confirm within 24 hrs. Handcrafted & made to order — 10–15 days delivery. Payment on delivery or UPI after confirmation.</div>
-    ${s?`<div class="autofill-note">✅ Logged in as <strong>${s.name}</strong> — details filled automatically.</div>`:''}
-    <div class="form-group"><label>Your Name *</label><input type="text" id="oName" value="${s?s.name:''}" placeholder="Full name"></div>
-    <div class="form-group"><label>Phone Number *</label><input type="tel" id="oPhone" value="${s?.phone||''}" placeholder="10-digit number"></div>
-    <div class="form-group"><label>Email</label><input type="email" id="oEmail" value="${s?.email||''}" placeholder="optional — for order tracking"></div>
-    <div class="form-group"><label>Delivery Address *</label><textarea id="oAddress" placeholder="Full delivery address"></textarea></div>
-    <div class="form-group"><label>Special Instructions</label><textarea id="oNote" placeholder="Colour preference, custom text, size, etc."></textarea></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeOrder()">Cancel</button>
-      <button class="btn-place-order" id="placeBtn" onclick="placeOrder()">Confirm Order ✓</button>
-    </div>`;
-  document.getElementById('orderModal').classList.add('show');
-}
-function closeOrder(){document.getElementById('orderModal').classList.remove('show');}
-
-async function placeOrder(){
-  const name=document.getElementById('oName')?.value.trim();
-  const phone=document.getElementById('oPhone')?.value.trim();
-  const email=document.getElementById('oEmail')?.value.trim();
-  const address=document.getElementById('oAddress')?.value.trim();
-  const note=document.getElementById('oNote')?.value.trim();
-  if(!name){alert('Please enter your name.');return;}
-  if(!phone||!/^[0-9]{10}$/.test(phone)){alert('Please enter a valid 10-digit phone number.');return;}
-  if(!address){alert('Please enter your delivery address.');return;}
-  const btn=document.getElementById('placeBtn');
-  if(btn){btn.textContent='Placing...';btn.disabled=true;}
-  const s=getSession();
-  const order={
-    id:'ORD'+Date.now(),
-    date:new Date().toLocaleString('en-IN'),
-    customer_name:name,phone,email,address,note,
-    status:'Pending',
-    customer_email:s?s.email:(email||''),
-    items:currentOrderProduct.isCart?currentOrderProduct.items:[{name:currentOrderProduct.product.name,variant:currentOrderProduct.variant?.label||null,price:currentOrderProduct.total,qty:1}],
-    total:currentOrderProduct.total,
-    order_logs:[{time:new Date().toLocaleString('en-IN'),action:'Order placed'}]
-  };
-  try{
-    await sb('orders',{method:'POST',body:JSON.stringify(order)});
-    if(currentOrderProduct.isCart){saveCart([]);updateCartBadge();}
-    document.getElementById('orderModalBox').innerHTML=`
-      <div class="order-success">
-        <div class="success-icon">🎉</div>
-        <h3>Order Placed!</h3>
-        <p>Thank you, <strong>${name}</strong>!<br>Order ID: <strong>${order.id}</strong><br><br>We'll contact you on <strong>${phone}</strong> within 24 hours. 💛</p>
-        ${s?'<p style="margin-top:10px;font-size:13px;color:var(--amber)">Track your order by clicking 👤 your name in the header!</p>':'<p style="margin-top:10px;font-size:12px;color:var(--muted)">Create an account to track your orders next time!</p>'}
-        <br><button class="btn-place-order" onclick="closeOrder()" style="width:100%">Continue Shopping</button>
-      </div>`;
-  }catch(e){
-    console.error("ORDER ERROR:", e);
-    if(e.message) console.error("MESSAGE:", e.message);
-    alert('Something went wrong. Please try again.');
-    if(btn){btn.textContent='Confirm Order ✓';btn.disabled=false;}
-  }
-}
-
-/* ─── AUTH ─── */
-function handleUserBtn(){
-  const s=getSession();
-  if(s){openTracking();}
-  else{switchTab('login');document.getElementById('authModal').classList.add('show');document.getElementById('overlay').classList.add('show');}
-}
-function closeAuth(){document.getElementById('authModal').classList.remove('show');document.getElementById('overlay').classList.remove('show');}
-function switchTab(tab){
-  document.getElementById('tabLogin').classList.toggle('active',tab==='login');
-  document.getElementById('tabRegister').classList.toggle('active',tab==='register');
-  document.getElementById('authContent').innerHTML=tab==='login'?`
-    <div class="form-group"><label>Email</label><input type="email" id="lE" placeholder="your@email.com"></div>
-    <div class="form-group"><label>Password</label><input type="password" id="lP" placeholder="Password"></div>
-    <button class="btn-place-order" onclick="doLogin()" style="width:100%;margin-top:4px">Login</button>`:`
-    <div class="form-group"><label>Name</label><input type="text" id="rN" placeholder="Your name"></div>
-    <div class="form-group"><label>Email</label><input type="email" id="rE" placeholder="your@email.com"></div>
-    <div class="form-group"><label>Phone</label><input type="tel" id="rPh" placeholder="10-digit number"></div>
-    <div class="form-group"><label>Password</label><input type="password" id="rP" placeholder="Min 6 characters"></div>
-    <button class="btn-place-order" onclick="doRegister()" style="width:100%;margin-top:4px">Create Account</button>`;
-}
-async function doLogin(){
-  const email=document.getElementById('lE')?.value.trim(),pass=document.getElementById('lP')?.value;
-  if(!email||!pass){alert('Please fill all fields.');return;}
-  try{
-    const r=await sb('users?email=eq.'+encodeURIComponent(email));
-    if(!r[0]||r[0].password!==pass){alert('Invalid email or password.');return;}
-    saveSession({name:r[0].name,email:r[0].email,phone:r[0].phone||''});
-    updateUserBtn();closeAuth();showToast('Welcome back, '+r[0].name+'! 👋');
-  }catch(e){alert('Login failed. Try again.');}
-}
-async function doRegister(){
-  const name=document.getElementById('rN')?.value.trim(),email=document.getElementById('rE')?.value.trim();
-  const phone=document.getElementById('rPh')?.value.trim(),pass=document.getElementById('rP')?.value;
-  if(!name||!email||!phone||!pass){alert('Please fill all fields.');return;}
-  if(!/^[0-9]{10}$/.test(phone)){alert('Enter a valid 10-digit phone.');return;}
-  if(pass.length<6){alert('Password must be at least 6 characters.');return;}
-  try{
-    const ex=await sb('users?email=eq.'+encodeURIComponent(email));
-    if(ex[0]){alert('Email already registered. Please login.');return;}
-    await sb('users',{method:'POST',body:JSON.stringify({name,email,phone,password:pass})});
-    saveSession({name,email,phone});
-    updateUserBtn();closeAuth();showToast('Welcome, '+name+'! 🎉');
-  }catch(e){alert('Registration failed. Try again.');}
-}
-function updateUserBtn(){
-  const s=getSession();
-  document.getElementById('userBtn').textContent=s?'👤 '+s.name.split(' ')[0]:'Login';
-}
-
-/* ─── ORDER TRACKING ─── */
-const STEPS=['Pending','Confirmed','Shipped','Delivered'];
-const STEP_ICONS={'Pending':'🕐','Confirmed':'✅','Shipped':'🚚','Delivered':'🎉','Cancelled':'❌'};
-
-async function openTracking(){
-  const s=getSession();if(!s)return;
-  const box=document.getElementById('trackModalBox');
-  box.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <h2>👤 My Orders</h2><button class="btn-close" onclick="closeTracking()">×</button>
-    </div>
-    <div style="text-align:center;padding:30px;color:var(--muted)">⏳ Loading your orders...</div>`;
-  document.getElementById('trackModal').classList.add('show');
-  document.getElementById('overlay').classList.add('show');
-  try{
-    const orders=await sb('orders?customer_email=eq.'+encodeURIComponent(s.email)+'&order=created_at.desc');
-    if(!orders.length){
-      box.innerHTML=`
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <h2>👤 My Orders</h2><button class="btn-close" onclick="closeTracking()">×</button>
-        </div>
-        <div style="text-align:center;padding:40px;color:var(--muted)">
-          <div style="font-size:40px;margin-bottom:12px">📭</div>
-          <p>No orders yet!</p><br>
-          <button class="btn-place-order" onclick="closeTracking()" style="width:auto;padding:10px 24px">Start Shopping</button>
-          <br><br><button onclick="doLogout()" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline">Logout</button>
-        </div>`;
-      return;
-    }
-    box.innerHTML=`
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-        <h2>👤 My Orders</h2>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button onclick="doLogout()" style="background:none;border:1px solid #e0d0c0;color:var(--muted);font-size:12px;cursor:pointer;border-radius:8px;padding:4px 10px">Logout</button>
-          <button class="btn-close" onclick="closeTracking()">×</button>
-        </div>
-      </div>
-      ${orders.map(o=>buildOrderCard(o)).join('')}`;
-  }catch(e){
-    box.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)">
-      <p>Could not load orders.</p><br>
-      <button class="btn-place-order" onclick="closeTracking()" style="width:auto;padding:10px 24px">Close</button></div>`;
-  }
-}
-
-function buildOrderCard(o){
-  const cancelled=o.status==='Cancelled';
-  const curIdx=STEPS.indexOf(o.status);
-  const pct=cancelled?0:Math.max(0,curIdx/(STEPS.length-1))*100;
-  const logs=o.order_logs||[];
-
-  const stepsHtml=STEPS.map((s,i)=>{
-    let dc='',lc='';
-    if(cancelled){dc=i===0?'done':'';lc=i===0?'done':'';}
-    else if(i<curIdx){dc='done';lc='done';}
-    else if(i===curIdx){dc='current';lc='current';}
-    return `<div class="status-step">
-      <div class="step-dot ${dc}">${i<=curIdx&&!cancelled?STEP_ICONS[s]:'○'}</div>
-      <div class="step-label ${lc}">${s}</div>
-    </div>`;
-  }).join('');
-
-  const logsHtml=logs.length?`
-    <div class="order-log-section">
-      <div class="order-log-title">📋 Activity Log</div>
-      ${logs.map(l=>`<div class="log-entry"><div class="log-dot"></div><div><span class="log-action">${l.action}</span><br><span style="font-size:11px">${l.time}</span></div></div>`).join('')}
-    </div>`:'';
-
-  return `<div class="order-track-card">
-    <div class="order-track-header">
-      <div><div class="order-track-id">${o.id}</div><div class="order-track-date">${o.date||''}</div></div>
-      <div class="order-track-total">₹${o.total}</div>
-    </div>
-    <div class="order-track-items">${(o.items||[]).map(i=>`${i.name}${i.variant?' ('+i.variant+')':''} ×${i.qty}`).join(' • ')}</div>
-    ${cancelled
-      ?`<div class="cancelled-bar">❌ Order Cancelled</div>`
-      :`<div class="status-bar-wrap">
-          <div class="status-bar-bg"></div>
-          <div class="status-bar-fill" style="width:calc(${pct}% * (100% - 40px)/100% + ${pct>0?'20px':'0px'})"></div>
-          <div class="status-steps">${stepsHtml}</div>
-        </div>`}
-    ${logsHtml}
-  </div>`;
-}
-
-function closeTracking(){document.getElementById('trackModal').classList.remove('show');document.getElementById('overlay').classList.remove('show');}
-function doLogout(){if(!confirm('Logout?'))return;saveSession(null);updateUserBtn();closeTracking();showToast('Logged out');}
-
-/* ─── HELPERS ─── */
-function closeAll(){
-  closeCart();closeDetail();closeOrder();closeTracking();
-  document.getElementById('authModal').classList.remove('show');
-  document.getElementById('overlay').classList.remove('show');
-}
-function showToast(msg){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2800);
-}
-
-async function init(){
-  await loadProducts();
-  buildCatBar();renderProducts();updateCartBadge();updateUserBtn();
-}
-init();
-</script>
 </body>
 </html>
