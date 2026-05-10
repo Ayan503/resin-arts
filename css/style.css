@@ -36,6 +36,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 header {
   background: var(--brown);
   padding: 0 20px;
+  width: 100%
   position: fixed; top: 0; z-index: 100;
   box-shadow: 0 2px 20px rgba(0,0,0,.18);
 }
@@ -85,7 +86,7 @@ header {
   background: linear-gradient(135deg, var(--brown) 0%, #7a5540 55%, var(--amber) 100%);
   padding: 60px 20px 50px; text-align: center; color: #fff;
   position: relative; overflow: hidden;
-  scroll-margin-top: 64px;
+  scroll-margin-top: 74px;
 }
 .hero::before {
   content: '';
