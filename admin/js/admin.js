@@ -47,7 +47,7 @@ function showPage(name,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   el&&el.classList.add('active');
-  const titles={dashboard:'Dashboard',products:'Products',orders:'Orders',reviews:'Reviews',settings:'Settings',community:'🌸 Community Feed'};
+  const titles={dashboard:'Dashboard',products:'Products',orders:'Orders',reviews:'Reviews',settings:'Settings',community:'🌸 Community Feed',media:'🗂 Media Library'};
   document.getElementById('topbarTitle').textContent=titles[name]||name;
   if(name==='products')  renderProductTable();
   if(name==='orders')    renderOrderTable();
@@ -55,6 +55,7 @@ function showPage(name,el){
   if(name==='dashboard') renderDashboard();
   if(name==='settings')  renderSettingsPage();
   if(name==='community') renderCommunityPage();
+  if(name==='media')     renderMediaPage();
   closeSidebar();
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('mobOverlay').classList.toggle('show');}
@@ -570,4 +571,277 @@ function adminViewImg(src) {
 function escAdm(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ══════════════════════════════
+   MEDIA LIBRARY + OFFICIAL POSTS
+══════════════════════════════ */
+let mediaItems = [];   // from DB: community_media
+let officialPosts = [];
+
+async function renderMediaPage() {
+  const el = document.getElementById('mediaContent');
+  el.innerHTML = `
+  <div class="section-card" style="margin-bottom:20px">
+    <div class="section-card-header">
+      <span class="section-card-title">📤 Upload Media</span>
+    </div>
+    <div style="padding:0 0 16px">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Upload images, videos, or audio files. You can then post them directly to the Community feed as official posts.</p>
+      <div id="uploadDropzone" style="border:2px dashed var(--warm);border-radius:14px;padding:36px;text-align:center;cursor:pointer;transition:border-color .2s;position:relative">
+        <input type="file" id="mediaFileInput" accept="image/*,video/*,audio/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="handleMediaUpload(this)">
+        <div style="font-size:40px;margin-bottom:10px">📁</div>
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px">Click or drag files here</div>
+        <div style="font-size:12px;color:var(--muted)">Images (JPG, PNG), Videos (MP4), Audio (MP3) • Max 30MB per file</div>
+      </div>
+      <div id="uploadProgress" style="display:none;margin-top:12px">
+        <div style="background:var(--warm);border-radius:10px;overflow:hidden;height:8px">
+          <div id="uploadBar" style="height:100%;background:var(--amber);width:0%;transition:width .3s;border-radius:10px"></div>
+        </div>
+        <div id="uploadStatus" style="text-align:center;font-size:13px;color:var(--muted);margin-top:6px">Uploading...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card" style="margin-bottom:20px">
+    <div class="section-card-header">
+      <span class="section-card-title">📝 Post to Community Feed</span>
+      <span style="font-size:12px;color:var(--muted)">Official posts (from admin)</span>
+    </div>
+    <div style="padding:0 0 16px">
+      <textarea id="officialPostText" placeholder="Write your post caption..." maxlength="1000"
+        style="width:100%;border:1.5px solid var(--warm);border-radius:12px;padding:12px;font-size:14px;font-family:'DM Sans',sans-serif;resize:none;min-height:80px;outline:none;margin-bottom:12px"></textarea>
+      <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <label style="cursor:pointer;display:flex;align-items:center;gap:6px;background:var(--cream);border:1.5px solid var(--warm);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--muted)">
+          📷 Attach Image
+          <input type="file" id="officialImgInput" accept="image/*" style="display:none" onchange="previewOfficialMedia(this,'image')">
+        </label>
+        <label style="cursor:pointer;display:flex;align-items:center;gap:6px;background:var(--cream);border:1.5px solid var(--warm);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--muted)">
+          🎬 Attach Video
+          <input type="file" id="officialVideoInput" accept="video/*" style="display:none" onchange="previewOfficialMedia(this,'video')">
+        </label>
+      </div>
+      <div id="officialMediaPreview" style="display:none;margin-bottom:12px;position:relative;display:inline-block"></div>
+      <div>
+        <button onclick="submitOfficialPost()" style="background:var(--amber);color:#fff;border:none;border-radius:20px;padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif" id="officialPostBtn">
+          Post to Feed 🌸
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-card-header">
+      <span class="section-card-title">🖼 Uploaded Media</span>
+      <span id="mediaCount" style="font-size:13px;color:var(--muted)"></span>
+    </div>
+    <div id="mediaGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:4px 0 8px">
+      <div style="text-align:center;padding:24px;color:var(--muted);grid-column:1/-1">⏳ Loading media...</div>
+    </div>
+  </div>
+
+  <div class="section-card" style="margin-top:20px">
+    <div class="section-card-header">
+      <span class="section-card-title">📋 Official Posts</span>
+    </div>
+    <div id="officialPostsTable">
+      <div style="text-align:center;padding:24px;color:var(--muted)">⏳ Loading...</div>
+    </div>
+  </div>`;
+
+  // drag-drop style
+  const dz = document.getElementById('uploadDropzone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor='var(--amber)'; });
+  dz.addEventListener('dragleave', () => { dz.style.borderColor='var(--warm)'; });
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.style.borderColor='var(--warm)'; handleMediaFileDrop(e.dataTransfer.files); });
+
+  await loadMedia();
+  await loadOfficialPosts();
+}
+
+let officialMediaData = { img: null, video: null };
+
+function previewOfficialMedia(input, type) {
+  const f = input.files[0]; if(!f) return;
+  if(f.size > 30*1024*1024) { alert('File must be under 30MB'); input.value=''; return; }
+  const r = new FileReader();
+  r.onload = e => {
+    const data = e.target.result;
+    if(type==='image') { officialMediaData.img=data; officialMediaData.video=null; document.getElementById('officialVideoInput').value=''; }
+    else { officialMediaData.video=data; officialMediaData.img=null; document.getElementById('officialImgInput').value=''; }
+    const prev = document.getElementById('officialMediaPreview');
+    prev.style.display = 'inline-block';
+    prev.innerHTML = type==='image'
+      ? `<img src="${data}" style="max-width:200px;max-height:140px;border-radius:10px;object-fit:cover;display:block">
+         <button onclick="clearOfficialMedia()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:13px">×</button>`
+      : `<video src="${data}" style="max-width:220px;max-height:140px;border-radius:10px;display:block" controls></video>
+         <button onclick="clearOfficialMedia()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:13px">×</button>`;
+    prev.style.position='relative';
+  };
+  r.readAsDataURL(f);
+}
+function clearOfficialMedia(){officialMediaData={img:null,video:null};document.getElementById('officialMediaPreview').style.display='none';document.getElementById('officialMediaPreview').innerHTML='';document.getElementById('officialImgInput').value='';document.getElementById('officialVideoInput').value='';}
+
+async function submitOfficialPost() {
+  const txt = document.getElementById('officialPostText').value.trim();
+  if(!txt && !officialMediaData.img && !officialMediaData.video) { showToast('Add text or media','error'); return; }
+  const btn = document.getElementById('officialPostBtn');
+  btn.disabled=true; btn.textContent='Posting...';
+  try {
+    await sb('community_posts', { method:'POST', body:JSON.stringify({
+      author_email: 'admin@resinaurabypryia.com',
+      author_name: '✨ Resin Aura By Priya',
+      author_avatar: null,
+      text: txt||null,
+      image: officialMediaData.img||null,
+      video: officialMediaData.video||null,
+      likes:0, shares:0, comments_count:0,
+      is_official: true,
+      created_at: new Date().toISOString()
+    })});
+    document.getElementById('officialPostText').value='';
+    clearOfficialMedia();
+    showToast('Post published to community! 🌸');
+    await loadOfficialPosts();
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+  finally { btn.disabled=false; btn.textContent='Post to Feed 🌸'; }
+}
+
+async function loadOfficialPosts() {
+  try {
+    officialPosts = await sb('community_posts?is_official=eq.true&order=created_at.desc&limit=30');
+    renderOfficialPosts();
+  } catch(e) { document.getElementById('officialPostsTable').innerHTML='<div style="text-align:center;padding:16px;color:var(--muted)">Could not load posts</div>'; }
+}
+
+function renderOfficialPosts() {
+  const el = document.getElementById('officialPostsTable');
+  if(!officialPosts.length) { el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted)">No official posts yet</div>'; return; }
+  el.innerHTML=`<div class="table-wrap"><table>
+    <thead><tr><th>Preview</th><th>Caption</th><th>Type</th><th>Likes</th><th>Comments</th><th>Date</th><th>Action</th></tr></thead>
+    <tbody>${officialPosts.map(p=>{
+      const date=new Date(p.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
+      const preview=p.video?`<video src="${p.video}" style="width:60px;height:44px;border-radius:6px;object-fit:cover"></video>`
+        :p.image?`<img src="${p.image}" style="width:60px;height:44px;border-radius:6px;object-fit:cover">`
+        :`<div style="width:60px;height:44px;background:var(--warm);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px">📝</div>`;
+      const type=p.video?'🎬 Video':p.image?'📷 Photo':'📝 Text';
+      const cap=p.text?p.text.substring(0,60)+(p.text.length>60?'...':''):'—';
+      return `<tr>
+        <td>${preview}</td>
+        <td style="font-size:13px;max-width:180px">${escAdm(cap)}</td>
+        <td style="font-size:12px">${type}</td>
+        <td style="text-align:center">${p.likes||0}</td>
+        <td style="text-align:center">${p.comments_count||0}</td>
+        <td style="font-size:12px;color:var(--muted)">${date}</td>
+        <td><button class="btn-delete" onclick="adminDeleteOfficialPost('${p.id}')">Delete</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+async function adminDeleteOfficialPost(id) {
+  if(!confirm('Delete this official post?')) return;
+  try {
+    await sb('community_posts?id=eq.'+id,{method:'DELETE',prefer:'return=minimal'});
+    showToast('Post deleted');
+    await loadOfficialPosts();
+  } catch(e) { showToast('Error','error'); }
+}
+
+/* ── MEDIA LIBRARY ── */
+async function loadMedia() {
+  try {
+    mediaItems = await sb('community_media?order=created_at.desc');
+    renderMediaGrid();
+  } catch(e) {
+    // table might not exist yet — show empty state
+    mediaItems=[];
+    document.getElementById('mediaGrid').innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);grid-column:1/-1">No media yet. Upload your first file! 📁</div>';
+    document.getElementById('mediaCount').textContent='0 files';
+  }
+}
+
+function renderMediaGrid() {
+  const grid = document.getElementById('mediaGrid');
+  document.getElementById('mediaCount').textContent = mediaItems.length + ' files';
+  if(!mediaItems.length) {
+    grid.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);grid-column:1/-1">No media yet. Upload your first file! 📁</div>';
+    return;
+  }
+  grid.innerHTML = mediaItems.map(m => {
+    const isVideo = m.type==='video';
+    const isAudio = m.type==='audio';
+    const thumb = isVideo
+      ? `<video src="${m.url}" style="width:100%;height:120px;object-fit:cover;border-radius:10px 10px 0 0;display:block;background:#000"></video>`
+      : isAudio
+      ? `<div style="width:100%;height:120px;background:linear-gradient(135deg,var(--brown),var(--amber));border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;font-size:36px">🎵</div>`
+      : `<img src="${m.url}" style="width:100%;height:120px;object-fit:cover;border-radius:10px 10px 0 0;display:block">`;
+    return `<div style="background:#fff;border-radius:12px;border:1px solid var(--warm);overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.06)">
+      ${thumb}
+      <div style="padding:8px">
+        <div style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:6px" title="${escAdm(m.name)}">${escAdm(m.name)}</div>
+        ${isAudio ? `<audio src="${m.url}" controls style="width:100%;height:28px;margin-bottom:6px"></audio>` : ''}
+        <div style="display:flex;gap:4px">
+          <button onclick="useMediaInPost('${m.url}','${m.type}')" style="flex:1;background:var(--amber-pale);color:var(--amber);border:1px solid var(--amber);border-radius:8px;padding:5px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif">Use in Post</button>
+          <button onclick="deleteMedia('${m.id}')" style="background:none;border:1px solid #eee;border-radius:8px;padding:5px 8px;font-size:13px;cursor:pointer;color:var(--muted)">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function useMediaInPost(url, type) {
+  // scroll up to official post section, pre-fill media
+  document.getElementById('officialPostText').scrollIntoView({behavior:'smooth',block:'center'});
+  if(type==='image') {
+    officialMediaData={img:url,video:null};
+    const prev=document.getElementById('officialMediaPreview');
+    prev.style.cssText='display:inline-block;position:relative';
+    prev.innerHTML=`<img src="${url}" style="max-width:200px;max-height:140px;border-radius:10px;object-fit:cover;display:block">
+      <button onclick="clearOfficialMedia()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:13px">×</button>`;
+  } else if(type==='video') {
+    officialMediaData={img:null,video:url};
+    const prev=document.getElementById('officialMediaPreview');
+    prev.style.cssText='display:inline-block;position:relative';
+    prev.innerHTML=`<video src="${url}" style="max-width:220px;max-height:140px;border-radius:10px;display:block" controls></video>
+      <button onclick="clearOfficialMedia()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:13px">×</button>`;
+  }
+  showToast('Media selected for post ✓','info');
+}
+
+async function handleMediaFileDrop(files) { await uploadFiles(files); }
+async function handleMediaUpload(input) { await uploadFiles(input.files); input.value=''; }
+
+async function uploadFiles(files) {
+  const prog = document.getElementById('uploadProgress');
+  const bar  = document.getElementById('uploadBar');
+  const stat = document.getElementById('uploadStatus');
+  prog.style.display='block'; bar.style.width='0%';
+  let done=0;
+  for (const f of files) {
+    if(f.size > 30*1024*1024) { showToast(f.name+' is over 30MB — skipped','error'); done++; continue; }
+    stat.textContent = `Uploading ${done+1}/${files.length}: ${f.name}`;
+    const type = f.type.startsWith('video') ? 'video' : f.type.startsWith('audio') ? 'audio' : 'image';
+    const b64 = await readFileB64(f);
+    try {
+      await sb('community_media', { method:'POST', body:JSON.stringify({
+        name: f.name, type, url: b64, size: f.size, created_at: new Date().toISOString()
+      })});
+    } catch(e) { showToast('Upload failed: '+f.name,'error'); }
+    done++;
+    bar.style.width = Math.round(done/files.length*100)+'%';
+  }
+  stat.textContent = 'Done! ' + done + ' file(s) uploaded.';
+  setTimeout(()=>{ prog.style.display='none'; bar.style.width='0%'; },2000);
+  await loadMedia();
+}
+
+function readFileB64(file) {
+  return new Promise((res,rej)=>{ const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(file); });
+}
+
+async function deleteMedia(id) {
+  if(!confirm('Delete this file?')) return;
+  try{await sb('community_media?id=eq.'+id,{method:'DELETE',prefer:'return=minimal'});showToast('Deleted');await loadMedia();}
+  catch(e){showToast('Error','error');}
 }

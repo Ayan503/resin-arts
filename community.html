@@ -6,14 +6,16 @@
 <title>Community — Resin Aura By Priya</title>
 <link rel="stylesheet" href="css/style.css">
 <style>
-/* ══════════════════════════
-   STORY STRIP
-══════════════════════════ */
+/* community page overrides */
+body { padding-top: 0 !important; }
+header { position: relative !important; top: auto !important; left: auto !important; right: auto !important; width: 100% !important; }
 .story-strip-wrap {
   background: #fff;
   border-bottom: 1px solid var(--warm);
-  padding: 14px 0 12px;
+  padding: 12px 0 10px;
   overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 .story-strip {
   display: flex;
@@ -222,21 +224,16 @@
       <button class="user-btn" id="userBtn" onclick="handleUserBtn()">Login</button>
     </div>
   </div>
+  <!-- Community sub-bar directly inside header -->
+  <div style="background:rgba(0,0,0,.15);margin:0 -20px;padding:6px 20px;display:flex;align-items:center;justify-content:space-between">
+    <span style="font-family:'Playfair Display',serif;color:var(--cream);font-size:14px;font-weight:600">🌸 Community</span>
+    <span style="font-size:11px;color:rgba(255,255,255,.6)">Share your Resin Aura moments</span>
+  </div>
 </header>
 
-<!-- FEED SUB-HEADER -->
-<div class="feed-header-bar">
-  <div class="feed-header-inner">
-    <h2>🌸 Community</h2>
-    <span style="font-size:12px;color:rgba(255,255,255,.6)">Share your Resin Aura moments</span>
-  </div>
-</div>
-
 <!-- STORY STRIP -->
-<div class="story-strip-wrap">
-  <div class="story-strip" id="storyStrip">
-    <div style="padding:8px;color:var(--muted);font-size:13px">⏳</div>
-  </div>
+<div class="story-strip-wrap" id="storyStripWrap">
+  <div class="story-strip" id="storyStrip"></div>
 </div>
 
 <!-- FEED -->
@@ -342,6 +339,10 @@
         📷 Photo
         <input type="file" id="postImgInput" accept="image/*" style="display:none" onchange="handlePostImg(this)">
       </label>
+      <label class="post-tool-btn" style="cursor:pointer">
+        🎬 Video
+        <input type="file" id="postVideoInput" accept="video/*" style="display:none" onchange="handlePostVideo(this)">
+      </label>
       <button class="btn-post-submit" id="submitPostBtn" onclick="submitPost()">Post ✨</button>
     </div>
   </div>
@@ -398,7 +399,7 @@ let allPosts=[], allStories=[], storyGroups=[];
 let likedPosts  = JSON.parse(localStorage.getItem('ra_liked')  || '{}');
 let seenStories = JSON.parse(localStorage.getItem('ra_seen_st')|| '{}');
 let openComments= new Set();
-let postImg=null, storyImg=null;
+let postImg=null, postVideo=null, storyImg=null;
 let sgIdx=0, sIdx=0, stTimer=null;
 let stTab='photo', selBg=0;
 
@@ -636,7 +637,10 @@ function renderFeed(){
 function renderPost(post){
   const s=getSession(),isLiked=!!likedPosts[post.id];
   const av=post.author_avatar?`<img src="${post.author_avatar}" alt="">`:post.author_name?post.author_name[0].toUpperCase():'?';
-  const imgH=post.image?`<img class="post-img" src="${post.image}" alt="" onclick="openImgViewer('${post.image.replace(/'/g,"\\'")}')">`:'' ;
+  let mediaH='';
+  if(post.video) mediaH=`<video class="post-img" src="${post.video}" controls playsinline preload="metadata" style="background:#000"></video>`;
+  else if(post.image) mediaH=`<img class="post-img" src="${post.image}" alt="" onclick="openImgViewer('${post.image.replace(/'/g,"\\'")}')">`;
+  const imgH=mediaH;
   const openC=openComments.has(post.id);
   const isOwn=s&&s.email===post.author_email;
   return `<div class="post-card" id="post-${post.id}">
@@ -727,14 +731,32 @@ async function sendComment(pid){
   try{
     await CDB.addComment({post_id:pid,author_email:s.email,author_name:s.name||s.email,author_avatar:s.avatar||null,text:txt,created_at:new Date().toISOString()});
     const p=allPosts.find(x=>x.id==pid);
-    if(p){p.comments_count=(p.comments_count||0)+1;const el=document.querySelector(`#post-${pid} .post-stats span:nth-child(2)`);if(el)el.textContent=p.comments_count+' comments';}
+    if(p){
+      const nc=(p.comments_count||0)+1;
+      p.comments_count=nc;
+      // update DB so refresh shows correct count
+      sb('community_posts?id=eq.'+pid,{method:'PATCH',body:JSON.stringify({comments_count:nc})}).catch(()=>{});
+      const el=document.querySelector(`#post-${pid} .post-stats span:nth-child(2)`);
+      if(el)el.textContent=nc+' comments';
+    }
     await loadComments(pid);showToast('Comment posted ✓');
   }catch(e){showToast('Error','error');}
   finally{if(inp)inp.disabled=false;}
 }
 async function deleteComment(cid,pid){
   if(!confirm('Delete?'))return;
-  try{await CDB.deleteComment(cid);const p=allPosts.find(x=>x.id==pid);if(p)p.comments_count=Math.max(0,(p.comments_count||0)-1);await loadComments(pid);showToast('Deleted');}
+  try{
+    await CDB.deleteComment(cid);
+    const p=allPosts.find(x=>x.id==pid);
+    if(p){
+      const nc=Math.max(0,(p.comments_count||0)-1);
+      p.comments_count=nc;
+      sb('community_posts?id=eq.'+pid,{method:'PATCH',body:JSON.stringify({comments_count:nc})}).catch(()=>{});
+      const el=document.querySelector(`#post-${pid} .post-stats span:nth-child(2)`);
+      if(el)el.textContent=nc+' comments';
+    }
+    await loadComments(pid);showToast('Deleted');
+  }
   catch(e){showToast('Error','error');}
 }
 async function sharePost(pid){
@@ -757,16 +779,31 @@ async function deletePost(pid){
 
 /* post create */
 function openPostModal(t){const s=getSession();if(!s){openAuth();return;}document.getElementById('postModal').classList.add('show');document.getElementById('overlay').classList.add('show');document.getElementById('postTextarea').focus();if(t==='photo')document.getElementById('postImgInput').click();}
-function closePostModal(){document.getElementById('postModal').classList.remove('show');document.getElementById('overlay').classList.remove('show');document.getElementById('postTextarea').value='';postImg=null;document.getElementById('imgPreviewWrap').style.display='none';document.getElementById('postImgPreview').src='';}
+function closePostModal(){document.getElementById('postModal').classList.remove('show');document.getElementById('overlay').classList.remove('show');document.getElementById('postTextarea').value='';postImg=null;postVideo=null;document.getElementById('imgPreviewWrap').style.display='none';try{document.getElementById('postImgPreview').src='';}catch(e){}}
 function handlePostImg(input){const f=input.files[0];if(!f)return;if(f.size>3*1024*1024){alert('Image must be under 3MB');return;}const r=new FileReader();r.onload=e=>{postImg=e.target.result;document.getElementById('postImgPreview').src=postImg;document.getElementById('imgPreviewWrap').style.display='block';};r.readAsDataURL(f);}
 function removePostImg(){postImg=null;document.getElementById('imgPreviewWrap').style.display='none';document.getElementById('postImgPreview').src='';document.getElementById('postImgInput').value='';}
+function handlePostVideo(input){
+  const f=input.files[0];if(!f)return;
+  if(f.size>30*1024*1024){alert('Video must be under 30MB');input.value='';return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    postVideo=e.target.result; postImg=null;
+    document.getElementById('postImgPreview').src='';
+    document.getElementById('imgPreviewWrap').innerHTML=
+      `<video src="${postVideo}" controls style="width:100%;border-radius:10px;max-height:220px;background:#000"></video>
+       <button class="remove-img-btn" onclick="removePostVideo()">×</button>`;
+    document.getElementById('imgPreviewWrap').style.display='block';
+  };
+  r.readAsDataURL(f);
+}
+function removePostVideo(){postVideo=null;document.getElementById('imgPreviewWrap').style.display='none';document.getElementById('imgPreviewWrap').innerHTML=`<img id="postImgPreview" alt="Preview"><button class="remove-img-btn" onclick="removePostImg()">×</button>`;document.getElementById('postVideoInput').value='';}
 async function submitPost(){
   const s=getSession();if(!s){openAuth();return;}
   const txt=document.getElementById('postTextarea').value.trim();
-  if(!txt&&!postImg){showToast('Write something or add a photo!','error');return;}
+  if(!txt&&!postImg&&!postVideo){showToast('Write something or add a photo/video!','error');return;}
   const btn=document.getElementById('submitPostBtn');btn.disabled=true;btn.textContent='Posting...';
   try{
-    await CDB.addPost({author_email:s.email,author_name:s.name||s.email,author_avatar:s.avatar||null,text:txt||null,image:postImg||null,likes:0,shares:0,comments_count:0,created_at:new Date().toISOString()});
+    await CDB.addPost({author_email:s.email,author_name:s.name||s.email,author_avatar:s.avatar||null,text:txt||null,image:postImg||null,video:postVideo||null,likes:0,shares:0,comments_count:0,created_at:new Date().toISOString()});
     closePostModal();await loadPosts();showToast('Posted! ✨');
   }catch(e){showToast('Error posting','error');console.error(e);}
   finally{btn.disabled=false;btn.textContent='Post ✨';}
