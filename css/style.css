@@ -24,12 +24,9 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; width: 100%; overflow-x: hidden; scrollbar-width: none; /* Firefox */ }
 body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; width: 100%;  max-width: 100vw; overflow-x: hidden; scrollbar-width: none; /* Firefox */ }
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  display: none; /* Chrome, Edge */
-}
+
 /* ── SCROLLBAR ── */
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 1.5px; }
 ::-webkit-scrollbar-track { background: var(--warm); }
 ::-webkit-scrollbar-thumb { background: var(--amber-pale); border-radius: 3px; }
 
