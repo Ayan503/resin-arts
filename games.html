@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Resin Games — Resin Aura By Priya</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+body { padding-top:0!important; overflow-x:hidden; background:var(--cream); }
+header { position:relative!important; top:auto!important; left:auto!important; right:auto!important; width:100%!important; }
+
+/* ── PAGE ── */
+.games-page { max-width:480px; margin:0 auto; padding:0 0 80px; }
+.games-hero {
+  background:linear-gradient(135deg,var(--brown) 0%,#7a4528 50%,var(--amber) 100%);
+  padding:20px 20px 0; text-align:center; color:#fff;
+}
+.games-hero h2 { font-family:'Playfair Display',serif; font-size:22px; margin-bottom:4px; }
+.games-hero p { font-size:12px; opacity:.8; margin-bottom:16px; }
+
+/* ── TABS ── */
+.game-tabs {
+  display:flex; background:rgba(0,0,0,.2); border-radius:14px 14px 0 0;
+  overflow:hidden;
+}
+.game-tab {
+  flex:1; padding:12px 6px; background:none; border:none; color:rgba(255,255,255,.6);
+  font-size:11px; font-family:'DM Sans',sans-serif; cursor:pointer;
+  transition:all .2s; text-align:center; line-height:1.3;
+}
+.game-tab.active { background:rgba(255,255,255,.15); color:#fff; font-weight:700; }
+.game-tab span { display:block; font-size:20px; margin-bottom:2px; }
+
+/* ── GAME CONTAINERS ── */
+.game-section { display:none; }
+.game-section.active { display:block; }
+
+/* ════════════════════════════
+   GAME 1 — BUBBLE POP
+════════════════════════════ */
+#bubbleGame {
+  background:linear-gradient(160deg,#3d1f0a,#7a3d1a,#c06020);
+  min-height:520px; position:relative; overflow:hidden;
+}
+.bubble-hud {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 16px; background:rgba(0,0,0,.3);
+}
+.bubble-hud-val { color:#fff; font-size:20px; font-weight:700; font-family:'Playfair Display',serif; }
+.bubble-hud-label { color:rgba(255,255,255,.6); font-size:10px; }
+.bubble-timer-bar { width:100%; height:5px; background:rgba(255,255,255,.2); }
+.bubble-timer-fill { height:100%; background:linear-gradient(90deg,var(--amber),#f5c842); transition:width .1s linear; border-radius:0 3px 3px 0; }
+#bubbleCanvas { display:block; width:100%; touch-action:none; }
+.bubble-overlay {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; background:rgba(20,10,0,.88);
+  z-index:10;
+}
+.bubble-overlay h3 { font-family:'Playfair Display',serif; font-size:24px; color:#fff; margin-bottom:8px; }
+.bubble-overlay p { color:rgba(255,255,255,.7); font-size:13px; margin-bottom:4px; }
+.bubble-overlay .score-big { font-size:48px; font-weight:700; color:var(--amber); font-family:'Playfair Display',serif; }
+.btn-game { background:var(--amber); color:#fff; border:none; border-radius:24px; padding:12px 32px; font-size:15px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; margin-top:16px; }
+.product-reveal {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; background:rgba(20,10,0,.92);
+  z-index:11; animation:fadeIn .3s ease;
+}
+@keyframes fadeIn { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
+.product-reveal img { width:120px; height:120px; object-fit:cover; border-radius:16px; margin-bottom:12px; border:3px solid var(--amber); }
+.product-reveal h4 { font-family:'Playfair Display',serif; color:#fff; font-size:18px; margin-bottom:4px; }
+.product-reveal p { color:rgba(255,255,255,.7); font-size:12px; margin-bottom:16px; }
+
+/* ════════════════════════════
+   GAME 2 — RESIN RUNNER
+════════════════════════════ */
+#runnerGame { background:#0a0612; position:relative; }
+.runner-hud {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 16px; background:rgba(0,0,0,.5);
+}
+.runner-hud-val { color:#fff; font-size:18px; font-weight:700; font-family:'Playfair Display',serif; }
+.runner-label { color:rgba(255,255,255,.5); font-size:10px; }
+#runnerCanvas { display:block; width:100%; touch-action:none; }
+.runner-overlay {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; background:rgba(10,6,18,.9);
+  z-index:10;
+}
+.runner-overlay h3 { font-family:'Playfair Display',serif; font-size:24px; color:#fff; margin-bottom:8px; }
+.runner-overlay p { color:rgba(255,255,255,.6); font-size:13px; text-align:center; padding:0 24px; margin-bottom:4px; }
+.runner-gems { display:flex; gap:8px; margin:10px 0; font-size:13px; color:rgba(255,255,255,.7); }
+
+/* ════════════════════════════
+   GAME 3 — MEMORY MATCH
+════════════════════════════ */
+#matchGame { background:linear-gradient(160deg,#1a0f2e,#2d1b4e); }
+.match-hud {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 16px; background:rgba(0,0,0,.3);
+}
+.match-hud-val { color:#fff; font-size:18px; font-weight:700; font-family:'Playfair Display',serif; }
+.match-label { color:rgba(255,255,255,.5); font-size:10px; }
+.match-grid {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:8px; padding:12px;
+}
+.match-card {
+  aspect-ratio:1; border-radius:12px; cursor:pointer;
+  position:relative; transform-style:preserve-3d;
+  transition:transform .35s ease;
+}
+.match-card.flipped { transform:rotateY(180deg); }
+.match-card.matched { opacity:.6; pointer-events:none; }
+.card-front,.card-back {
+  position:absolute; inset:0; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  backface-visibility:hidden; -webkit-backface-visibility:hidden;
+}
+.card-back {
+  background:linear-gradient(135deg,#4a2d7a,#7a4abf);
+  font-size:28px;
+  border:2px solid rgba(255,255,255,.15);
+  box-shadow:0 4px 12px rgba(0,0,0,.3);
+}
+.card-back::before { content:'✨'; font-size:22px; }
+.card-front {
+  background:linear-gradient(135deg,#2d1b4e,#4a2d7a);
+  transform:rotateY(180deg);
+  font-size:28px;
+  border:2px solid var(--amber);
+}
+.match-overlay {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; background:rgba(10,6,18,.92);
+  z-index:10;
+}
+.match-overlay h3 { font-family:'Playfair Display',serif; font-size:24px; color:#fff; margin-bottom:8px; }
+.match-overlay p { color:rgba(255,255,255,.6); font-size:13px; margin-bottom:4px; text-align:center; padding:0 20px; }
+.stars { font-size:32px; margin:8px 0; letter-spacing:4px; }
+
+/* ── LEADERBOARD STRIP ── */
+.leaderboard-strip {
+  background:#fff; border-top:1px solid var(--warm);
+  padding:12px 16px;
+}
+.leaderboard-strip h4 { font-size:13px; font-weight:700; color:var(--text); margin-bottom:8px; }
+.lb-row { display:flex; align-items:center; gap:10px; padding:4px 0; font-size:12px; }
+.lb-rank { width:20px; text-align:center; color:var(--muted); font-weight:700; }
+.lb-rank.gold { color:#f5c842; }
+.lb-rank.silver { color:#aaa; }
+.lb-rank.bronze { color:#cd7f32; }
+.lb-name { flex:1; color:var(--text); }
+.lb-score { color:var(--amber); font-weight:700; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="logo" href="index.html">Resin <span>Aura By Priya Chakraborty</span></a>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="window.location.href='index.html'">🛍</button>
+      <a class="community-nav-link" href="community.html">🌸</a>
+    </div>
+  </div>
+</header>
+
+<div class="games-page">
+  <div class="games-hero">
+    <h2>🎮 Resin Games</h2>
+    <p>Play, earn rewards & discover our products!</p>
+    <div class="game-tabs">
+      <button class="game-tab active" onclick="switchGame('bubble',this)">
+        <span>🫧</span>Bubble Pop
+      </button>
+      <button class="game-tab" onclick="switchGame('runner',this)">
+        <span>🏃</span>Resin Run
+      </button>
+      <button class="game-tab" onclick="switchGame('match',this)">
+        <span>🧩</span>Memory
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ GAME 1: BUBBLE POP ══ -->
+  <div class="game-section active" id="bubbleSection">
+    <div id="bubbleGame">
+      <div class="bubble-hud">
+        <div><div class="bubble-hud-val" id="bScore">0</div><div class="bubble-hud-label">SCORE</div></div>
+        <div style="text-align:center"><div class="bubble-hud-val" id="bCombo">x1</div><div class="bubble-hud-label">COMBO</div></div>
+        <div style="text-align:right"><div class="bubble-hud-val" id="bLevel">1</div><div class="bubble-hud-label">LEVEL</div></div>
+      </div>
+      <div class="bubble-timer-bar"><div class="bubble-timer-fill" id="bTimerFill"></div></div>
+      <canvas id="bubbleCanvas"></canvas>
+      <div class="bubble-overlay" id="bubbleOverlay">
+        <div style="font-size:56px;margin-bottom:8px">🫧</div>
+        <h3>Bubble Pop!</h3>
+        <p>Tap the resin bubbles before they escape!</p>
+        <p style="font-size:11px;margin-top:4px;opacity:.6">Pop golden bubbles to reveal products ✨</p>
+        <button class="btn-game" onclick="startBubble()">Play Now!</button>
+      </div>
+    </div>
+    <div class="leaderboard-strip" id="bubbleLB"></div>
+  </div>
+
+  <!-- ══ GAME 2: RUNNER ══ -->
+  <div class="game-section" id="runnerSection">
+    <div id="runnerGame" style="position:relative">
+      <div class="runner-hud">
+        <div><div class="runner-hud-val" id="rScore">0</div><div class="runner-label">DISTANCE</div></div>
+        <div style="text-align:center"><div class="runner-hud-val" id="rGems">0</div><div class="runner-label">GEMS 💎</div></div>
+        <div style="text-align:right"><div class="runner-hud-val" id="rSpeed">1x</div><div class="runner-label">SPEED</div></div>
+      </div>
+      <canvas id="runnerCanvas"></canvas>
+      <div class="runner-overlay" id="runnerOverlay">
+        <div style="font-size:56px;margin-bottom:8px">🏃</div>
+        <h3>Resin Runner!</h3>
+        <p>Tap/swipe UP to jump, DOWN to slide</p>
+        <p>Collect resin gems 💎, avoid obstacles!</p>
+        <div class="runner-gems">
+          <span>🫙 Resin Jar = 10pts</span>
+          <span>💎 Gem = 25pts</span>
+        </div>
+        <button class="btn-game" onclick="startRunner()">Run!</button>
+      </div>
+    </div>
+    <div class="leaderboard-strip" id="runnerLB"></div>
+  </div>
+
+  <!-- ══ GAME 3: MEMORY MATCH ══ -->
+  <div class="game-section" id="matchSection">
+    <div id="matchGame" style="position:relative">
+      <div class="match-hud">
+        <div><div class="match-hud-val" id="mMoves">0</div><div class="match-label">MOVES</div></div>
+        <div style="text-align:center"><div class="match-hud-val" id="mMatches">0/8</div><div class="match-label">MATCHED</div></div>
+        <div style="text-align:right"><div class="match-hud-val" id="mTimer">0s</div><div class="match-label">TIME</div></div>
+      </div>
+      <div class="match-grid" id="matchGrid"></div>
+      <div class="match-overlay" id="matchOverlay">
+        <div style="font-size:56px;margin-bottom:8px">🧩</div>
+        <h3>Resin Memory!</h3>
+        <p>Match pairs of resin products.</p>
+        <p>Fewer moves = higher score! ✨</p>
+        <button class="btn-game" onclick="startMatch()">Play!</button>
+      </div>
+    </div>
+    <div class="leaderboard-strip" id="matchLB"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════
+   TAB SWITCHING
+══════════════════════════════════════════════ */
+let activeGame = 'bubble';
+function switchGame(game, btn) {
+  document.querySelectorAll('.game-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.game-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(game + 'Section').classList.add('active');
+  btn.classList.add('active');
+  if(activeGame !== game) {
+    pauseAllGames();
+    activeGame = game;
+  }
+  loadLeaderboard(game);
+}
+function pauseAllGames() {
+  bubblePaused = true;
+  runnerRunning = false;
+  cancelAnimationFrame(runnerRAF);
+}
+
+/* ══════════════════════════════════════════════
+   LEADERBOARD (Supabase)
+══════════════════════════════════════════════ */
+async function saveScore(game, score) {
+  const s = getSession();
+  const name = s?.name || 'Guest';
+  try {
+    await sb('game_scores', { method: 'POST', body: JSON.stringify({
+      game, player_name: name, player_email: s?.email || null,
+      score, created_at: new Date().toISOString()
+    })});
+  } catch(e) {}
+}
+
+async function loadLeaderboard(game) {
+  const el = document.getElementById(game + 'LB');
+  if (!el) return;
+  try {
+    const scores = await sb(`game_scores?game=eq.${game}&order=score.desc&limit=5`);
+    if (!scores?.length) { el.innerHTML = ''; return; }
+    const medals = ['gold','silver','bronze','',''];
+    el.innerHTML = `<h4>🏆 Top Players</h4>` + scores.map((s,i) => `
+      <div class="lb-row">
+        <div class="lb-rank ${medals[i]}">${['🥇','🥈','🥉','4','5'][i]}</div>
+        <div class="lb-name">${escH(s.player_name)}</div>
+        <div class="lb-score">${s.score}</div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = ''; }
+}
+
+/* ══════════════════════════════════════════════
+   GAME 1: BUBBLE POP
+══════════════════════════════════════════════ */
+const PRODUCTS = [
+  { name:'Ocean Wave Tray', emoji:'🌊', price:'₹850' },
+  { name:'Amber Coaster Set', emoji:'🟤', price:'₹650' },
+  { name:'Floral Keychain', emoji:'🌸', price:'₹250' },
+  { name:'Galaxy Bookmark', emoji:'✨', price:'₹199' },
+  { name:'Crystal Earrings', emoji:'💎', price:'₹450' },
+];
+
+let bCanvas, bCtx, bubbles = [], bScore = 0, bCombo = 1, bLevel = 1;
+let bTimer = 30, bTimerInterval, bAnimFrame, bubblePaused = false;
+let bBestScore = parseInt(localStorage.getItem('ra_bubble_best') || '0');
+
+const BUBBLE_COLORS = [
+  ['#e8a87c','#c06030'],['#7ec8e3','#2a7da0'],['#b5e48c','#52b788'],
+  ['#f7c59f','#e07b39'],['#cdb4db','#8a4fbf'],
+];
+
+function initBubble() {
+  bCanvas = document.getElementById('bubbleCanvas');
+  bCtx = bCanvas.getContext('2d');
+  const W = bCanvas.parentElement.clientWidth;
+  bCanvas.width = W; bCanvas.height = Math.min(W * 1.1, 400);
+  bCanvas.addEventListener('touchstart', onBubbleTap, { passive: false });
+  bCanvas.addEventListener('mousedown', onBubbleTap);
+}
+
+function startBubble() {
+  document.getElementById('bubbleOverlay').style.display = 'none';
+  bubbles = []; bScore = 0; bCombo = 1; bLevel = 1; bTimer = 30;
+  bubblePaused = false;
+  updateBubbleHUD();
+  clearInterval(bTimerInterval);
+  bTimerInterval = setInterval(bubbleTimerTick, 1000);
+  spawnBubbles();
+  animateBubbles();
+}
+
+function bubbleTimerTick() {
+  if (bubblePaused) return;
+  bTimer--;
+  const fill = document.getElementById('bTimerFill');
+  if (fill) fill.style.width = (bTimer / 30 * 100) + '%';
+  if (bTimer <= 0) endBubble();
+}
+
+function spawnBubbles() {
+  if (bubblePaused) return;
+  const count = 2 + bLevel;
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      if (!bubblePaused) addBubble();
+    }, i * 300);
+  }
+  setTimeout(spawnBubbles, Math.max(800, 2000 - bLevel * 150));
+}
+
+function addBubble() {
+  const W = bCanvas.width, H = bCanvas.height;
+  const r = 28 + Math.random() * 18;
+  const isGold = Math.random() < 0.12;
+  const isBonus = Math.random() < 0.08;
+  const col = BUBBLE_COLORS[Math.floor(Math.random() * BUBBLE_COLORS.length)];
+  bubbles.push({
+    x: r + Math.random() * (W - r * 2),
+    y: H + r,
+    r, vy: -(0.8 + Math.random() * 1.2 + bLevel * 0.15),
+    vx: (Math.random() - 0.5) * 0.8,
+    color: isGold ? '#f5c842' : col[0],
+    stroke: isGold ? '#e8a000' : col[1],
+    isGold, isBonus,
+    wobble: Math.random() * Math.PI * 2,
+    life: 1, popping: false, popR: 0,
+    pts: isGold ? 50 : isBonus ? 25 : 10,
+    emoji: isGold ? '⭐' : isBonus ? '💎' : '',
+  });
+}
+
+function onBubbleTap(e) {
+  e.preventDefault();
+  if (bubblePaused) return;
+  const rect = bCanvas.getBoundingClientRect();
+  const scaleX = bCanvas.width / rect.width;
+  const scaleY = bCanvas.height / rect.height;
+  const pts = e.touches
+    ? [...e.touches].map(t => ({ x: (t.clientX - rect.left) * scaleX, y: (t.clientY - rect.top) * scaleY }))
+    : [{ x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY }];
+  let hit = false;
+  pts.forEach(pt => {
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      const b = bubbles[i];
+      if (b.popping) continue;
+      const dx = pt.x - b.x, dy = pt.y - b.y;
+      if (Math.sqrt(dx*dx+dy*dy) < b.r + 8) {
+        popBubble(i); hit = true; break;
+      }
+    }
+  });
+  if (!hit) { bCombo = 1; updateBubbleHUD(); }
+}
+
+function popBubble(i) {
+  const b = bubbles[i];
+  b.popping = true; b.popR = b.r;
+  bScore += b.pts * bCombo;
+  bCombo = Math.min(bCombo + 1, 8);
+  if (bScore > bBestScore) bBestScore = bScore;
+  bLevel = Math.floor(bScore / 200) + 1;
+  updateBubbleHUD();
+  showFloatText(b.x, b.y, '+' + (b.pts * bCombo), b.isGold ? '#f5c842' : '#fff');
+  if (b.isGold) revealProduct(b.x, b.y);
+}
+
+function revealProduct(x, y) {
+  const prod = PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)];
+  const div = document.createElement('div');
+  div.className = 'product-reveal';
+  div.innerHTML = `
+    <div style="font-size:64px;margin-bottom:8px">${prod.emoji}</div>
+    <h4>${prod.name}</h4>
+    <p style="color:var(--amber);font-size:16px;font-weight:700">${prod.price}</p>
+    <p>Found a golden bubble! 🌟</p>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn-game" onclick="window.location.href='index.html'" style="padding:10px 20px;font-size:13px">Shop Now 🛍</button>
+      <button class="btn-game" onclick="this.closest('.product-reveal').remove()" style="background:rgba(255,255,255,.2);padding:10px 20px;font-size:13px">Continue</button>
+    </div>`;
+  div.querySelector('.product-reveal')?.remove();
+  document.getElementById('bubbleGame').appendChild(div);
+  bubblePaused = true;
+  div.querySelector('button:last-child').onclick = () => { div.remove(); bubblePaused = false; };
+}
+
+const floatTexts = [];
+function showFloatText(x, y, text, color) {
+  floatTexts.push({ x, y, text, color, life: 1, vy: -2 });
+}
+
+function animateBubbles() {
+  if (bubblePaused) { bAnimFrame = requestAnimationFrame(animateBubbles); return; }
+  const W = bCanvas.width, H = bCanvas.height;
+  bCtx.clearRect(0, 0, W, H);
+
+  // draw gradient bg
+  const bg = bCtx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#3d1f0a'); bg.addColorStop(1,'#1a0a02');
+  bCtx.fillStyle = bg; bCtx.fillRect(0,0,W,H);
+
+  // update & draw bubbles
+  for (let i = bubbles.length - 1; i >= 0; i--) {
+    const b = bubbles[i];
+    b.wobble += 0.05;
+    if (!b.popping) {
+      b.x += b.vx + Math.sin(b.wobble) * 0.4;
+      b.y += b.vy;
+      if (b.x < b.r || b.x > W - b.r) b.vx *= -1;
+      if (b.y < -b.r * 2) { bubbles.splice(i, 1); bCombo = 1; updateBubbleHUD(); continue; }
+    } else {
+      b.popR += 4; b.life -= 0.12;
+      if (b.life <= 0) { bubbles.splice(i, 1); continue; }
+    }
+    drawBubble(b);
+  }
+
+  // float texts
+  for (let i = floatTexts.length - 1; i >= 0; i--) {
+    const t = floatTexts[i];
+    t.y += t.vy; t.life -= 0.03;
+    if (t.life <= 0) { floatTexts.splice(i, 1); continue; }
+    bCtx.save();
+    bCtx.globalAlpha = t.life;
+    bCtx.fillStyle = t.color;
+    bCtx.font = 'bold 18px "DM Sans"';
+    bCtx.textAlign = 'center';
+    bCtx.fillText(t.text, t.x, t.y);
+    bCtx.restore();
+  }
+
+  bAnimFrame = requestAnimationFrame(animateBubbles);
+}
+
+function drawBubble(b) {
+  const ctx = bCtx;
+  ctx.save();
+  ctx.globalAlpha = b.life;
+  if (b.popping) {
+    ctx.strokeStyle = b.color;
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = b.life * 0.6;
+    for (let a = 0; a < 6; a++) {
+      const ang = (a / 6) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(b.x + Math.cos(ang) * b.popR * 0.6, b.y + Math.sin(ang) * b.popR * 0.6, 4, 0, Math.PI*2);
+      ctx.stroke();
+    }
+  } else {
+    // bubble body
+    const grad = ctx.createRadialGradient(b.x - b.r*0.3, b.y - b.r*0.3, b.r*0.1, b.x, b.y, b.r);
+    grad.addColorStop(0, 'rgba(255,255,255,0.6)');
+    grad.addColorStop(0.4, b.color + 'cc');
+    grad.addColorStop(1, b.stroke + '88');
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+    ctx.fillStyle = grad; ctx.fill();
+    ctx.strokeStyle = b.stroke + 'aa'; ctx.lineWidth = 1.5; ctx.stroke();
+    // shine
+    ctx.beginPath(); ctx.arc(b.x - b.r*0.3, b.y - b.r*0.35, b.r*0.2, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fill();
+    // emoji label
+    if (b.emoji) { ctx.font = `${b.r * 0.8}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(b.emoji, b.x, b.y); }
+  }
+  ctx.restore();
+}
+
+function updateBubbleHUD() {
+  document.getElementById('bScore').textContent = bScore;
+  document.getElementById('bCombo').textContent = 'x' + bCombo;
+  document.getElementById('bLevel').textContent = bLevel;
+}
+
+function endBubble() {
+  clearInterval(bTimerInterval); bubblePaused = true;
+  saveScore('bubble', bScore);
+  const ov = document.getElementById('bubbleOverlay');
+  ov.style.display = 'flex';
+  ov.innerHTML = `
+    <div style="font-size:48px;margin-bottom:8px">🎊</div>
+    <h3>Time's Up!</h3>
+    <div class="score-big">${bScore}</div>
+    <p>Best: ${Math.max(bScore, bBestScore)}</p>
+    <p style="font-size:11px;opacity:.6">Level ${bLevel} reached</p>
+    <button class="btn-game" onclick="startBubble()">Play Again</button>
+    <button class="btn-game" onclick="window.location.href='index.html'" style="background:rgba(255,255,255,.2);margin-top:8px">Shop Products 🛍</button>`;
+  localStorage.setItem('ra_bubble_best', Math.max(bScore, bBestScore));
+  loadLeaderboard('bubble');
+}
+
+/* ══════════════════════════════════════════════
+   GAME 2: RESIN RUNNER
+══════════════════════════════════════════════ */
+let rCanvas, rCtx, runnerRunning = false, runnerRAF;
+let rScore = 0, rGems = 0, rSpeed = 3;
+let player, obstacles, gems, rGround, rBg = 0;
+let rJumping = false, rSliding = false;
+let rTouchStartY = 0;
+
+function initRunner() {
+  rCanvas = document.getElementById('runnerCanvas');
+  rCtx = rCanvas.getContext('2d');
+  const W = rCanvas.parentElement.clientWidth;
+  rCanvas.width = W; rCanvas.height = Math.round(W * 0.55);
+  rGround = rCanvas.height * 0.75;
+  rCanvas.addEventListener('touchstart', e => { rTouchStartY = e.touches[0].clientY; }, { passive: true });
+  rCanvas.addEventListener('touchend', e => {
+    const dy = rTouchStartY - e.changedTouches[0].clientY;
+    if (dy > 20) doJump(); else if (dy < -20) doSlide();
+    else doJump();
+  });
+  rCanvas.addEventListener('mousedown', doJump);
+  window.addEventListener('keydown', e => {
+    if (!runnerRunning) return;
+    if (e.code === 'Space' || e.code === 'ArrowUp') doJump();
+    if (e.code === 'ArrowDown') doSlide();
+  });
+}
+
+function startRunner() {
+  document.getElementById('runnerOverlay').style.display = 'none';
+  rScore = 0; rGems = 0; rSpeed = 3; rBg = 0;
+  player = { x: rCanvas.width * 0.15, y: rGround - 44, w: 32, h: 44, vy: 0, sliding: false, slideTimer: 0 };
+  obstacles = []; gems = [];
+  runnerRunning = true;
+  rJumping = false; rSliding = false;
+  runnerLoop();
+}
+
+function doJump() {
+  if (!runnerRunning) return;
+  if (!rJumping && player.y >= rGround - player.h - 5) {
+    player.vy = -rCanvas.height * 0.048;
+    rJumping = true;
+  }
+}
+function doSlide() {
+  if (!runnerRunning) return;
+  player.sliding = true; player.slideTimer = 40;
+}
+
+function runnerLoop() {
+  if (!runnerRunning) return;
+  const W = rCanvas.width, H = rCanvas.height;
+  rCtx.clearRect(0,0,W,H);
+  rScore += 0.1; rSpeed = 3 + Math.floor(rScore / 100) * 0.5;
+  rBg -= rSpeed * 0.5;
+  updateRunnerHUD();
+  drawRunnerBg(W, H);
+  spawnRunnerObjects(W);
+  updatePlayer(H);
+  updateObstacles(W, H);
+  updateGems(W, H);
+  drawPlayer(rCtx);
+  checkRunnerCollisions();
+  runnerRAF = requestAnimationFrame(runnerLoop);
+}
+
+function drawRunnerBg(W, H) {
+  // sky
+  const sky = rCtx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,'#0a0612'); sky.addColorStop(0.6,'#1a0f2e'); sky.addColorStop(1,'#2d1b4e');
+  rCtx.fillStyle = sky; rCtx.fillRect(0,0,W,H);
+  // stars
+  rCtx.fillStyle = 'rgba(255,255,255,0.6)';
+  for(let i=0;i<20;i++){
+    const sx=(i*137+rBg*0.2)%W, sy=H*0.05+i*7%( H*0.4);
+    rCtx.beginPath(); rCtx.arc(sx,sy,0.8,0,Math.PI*2); rCtx.fill();
+  }
+  // ground
+  rCtx.fillStyle = '#2d1b4e';
+  rCtx.fillRect(0, rGround, W, H - rGround);
+  rCtx.fillStyle = 'rgba(138,79,191,0.4)';
+  rCtx.fillRect(0, rGround, W, 4);
+  // running lines
+  rCtx.strokeStyle = 'rgba(138,79,191,0.2)';
+  rCtx.lineWidth = 1;
+  for(let i=0;i<5;i++){
+    const lx = ((rBg*2 + i*(W/4)) % W + W) % W;
+    rCtx.beginPath(); rCtx.moveTo(lx, rGround); rCtx.lineTo(lx-20, H); rCtx.stroke();
+  }
+}
+
+let rObsTimer=0,rGemTimer=0;
+function spawnRunnerObjects(W) {
+  rObsTimer++;
+  if(rObsTimer > Math.max(60, 120 - rSpeed*8)){
+    rObsTimer=0;
+    const h = 30 + Math.random()*30;
+    const isHigh = Math.random() < 0.3; // floating obstacle
+    obstacles.push({ x:W+20, y: isHigh ? rGround-h-40 : rGround-h, w:22, h, type:isHigh?'float':'ground', emoji:['🪨','🏺','🫙'][Math.floor(Math.random()*3)] });
+  }
+  rGemTimer++;
+  if(rGemTimer > 80){ rGemTimer=0;
+    const isSpecial=Math.random()<0.2;
+    gems.push({ x:W+10, y:rGround-50-Math.random()*60, r:10, collected:false, isSpecial, pts:isSpecial?25:10 });
+  }
+}
+
+function updatePlayer(H) {
+  player.vy += 0.9; // gravity
+  player.y += player.vy;
+  if(player.y >= rGround - player.h){ player.y = rGround - player.h; player.vy=0; rJumping=false; }
+  if(player.slideTimer>0){ player.slideTimer--; if(player.slideTimer===0) player.sliding=false; }
+}
+
+function drawPlayer(ctx) {
+  const p = player;
+  const ph = p.sliding ? p.h*0.5 : p.h;
+  const py = p.sliding ? p.y + p.h*0.5 : p.y;
+  ctx.save();
+  // body
+  ctx.fillStyle = '#f5c842';
+  ctx.beginPath(); ctx.roundRect(p.x, py, p.w, ph, 6); ctx.fill();
+  // face
+  ctx.fillStyle = '#3d2000';
+  ctx.font = `${ph*0.55}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🧑', p.x + p.w/2, py + ph/2);
+  ctx.restore();
+}
+
+function updateObstacles(W, H) {
+  for(let i=obstacles.length-1;i>=0;i--){
+    const o=obstacles[i];
+    o.x -= rSpeed;
+    rCtx.save();
+    rCtx.fillStyle='rgba(138,79,191,0.3)';
+    rCtx.strokeStyle='rgba(180,100,220,0.8)'; rCtx.lineWidth=2;
+    rCtx.beginPath(); rCtx.roundRect(o.x,o.y,o.w,o.h,4); rCtx.fill(); rCtx.stroke();
+    rCtx.font=`${Math.min(o.w,o.h)*0.8}px serif`; rCtx.textAlign='center'; rCtx.textBaseline='middle';
+    rCtx.fillText(o.emoji, o.x+o.w/2, o.y+o.h/2);
+    rCtx.restore();
+    if(o.x+o.w<0) obstacles.splice(i,1);
+  }
+}
+
+function updateGems(W, H) {
+  for(let i=gems.length-1;i>=0;i--){
+    const g=gems[i];
+    g.x -= rSpeed;
+    if(!g.collected){
+      rCtx.save();
+      rCtx.fillStyle = g.isSpecial?'#f5c842':'#a855f7';
+      rCtx.shadowColor = g.isSpecial?'#f5c842':'#a855f7'; rCtx.shadowBlur=10;
+      rCtx.beginPath(); rCtx.arc(g.x,g.y,g.r,0,Math.PI*2); rCtx.fill();
+      rCtx.font=`${g.r*1.4}px serif`; rCtx.textAlign='center'; rCtx.textBaseline='middle';
+      rCtx.fillText(g.isSpecial?'⭐':'💎',g.x,g.y);
+      rCtx.restore();
+    }
+    if(g.x+g.r<0) gems.splice(i,1);
+  }
+}
+
+function checkRunnerCollisions() {
+  const p = player;
+  const ph = p.sliding ? p.h*0.5 : p.h;
+  const py = p.sliding ? p.y + p.h*0.5 : p.y;
+
+  // gems
+  for(const g of gems){
+    if(g.collected) continue;
+    const dx=p.x+p.w/2-g.x, dy=py+ph/2-g.y;
+    if(Math.sqrt(dx*dx+dy*dy) < g.r+14){ g.collected=true; rGems+=g.pts; rScore+=g.pts; }
+  }
+
+  // obstacles — hitbox slightly forgiving
+  for(const o of obstacles){
+    if(p.x+p.w-6 > o.x+4 && p.x+6 < o.x+o.w-4 && py+ph-4 > o.y+4 && py+4 < o.y+o.h-4){
+      endRunner(); return;
+    }
+  }
+}
+
+function updateRunnerHUD() {
+  document.getElementById('rScore').textContent = Math.floor(rScore);
+  document.getElementById('rGems').textContent = rGems;
+  document.getElementById('rSpeed').textContent = rSpeed.toFixed(1)+'x';
+}
+
+function endRunner() {
+  runnerRunning = false;
+  cancelAnimationFrame(runnerRAF);
+  const sc = Math.floor(rScore);
+  saveScore('runner', sc);
+  const ov = document.getElementById('runnerOverlay');
+  ov.style.display='flex';
+  ov.innerHTML=`
+    <div style="font-size:48px;margin-bottom:8px">💥</div>
+    <h3>Game Over!</h3>
+    <div class="score-big" style="font-size:36px;color:#a855f7">${sc}</div>
+    <div class="runner-gems"><span>💎 ${rGems} gems collected</span></div>
+    <button class="btn-game" onclick="startRunner()">Try Again</button>
+    <button class="btn-game" onclick="window.location.href='index.html'" style="background:rgba(255,255,255,.2);margin-top:8px">Shop 🛍</button>`;
+  loadLeaderboard('runner');
+}
+
+/* ══════════════════════════════════════════════
+   GAME 3: MEMORY MATCH
+══════════════════════════════════════════════ */
+const MATCH_CARDS = ['🫙','💎','🌸','🌊','✨','🎨','🏺','🪞'];
+let mCards=[], mFlipped=[], mMatched=0, mMoves=0, mSeconds=0, mInterval=null, mLocked=false;
+
+function startMatch() {
+  document.getElementById('matchOverlay').style.display='none';
+  mMatched=0; mMoves=0; mSeconds=0; mFlipped=[]; mLocked=false;
+  clearInterval(mInterval);
+  mInterval = setInterval(()=>{ mSeconds++; document.getElementById('mTimer').textContent=mSeconds+'s'; },1000);
+  document.getElementById('mMatches').textContent='0/8';
+  document.getElementById('mMoves').textContent='0';
+  const pairs=[...MATCH_CARDS,...MATCH_CARDS].sort(()=>Math.random()-0.5);
+  mCards=pairs.map((e,i)=>({id:i,emoji:e,flipped:false,matched:false}));
+  renderMatchGrid();
+}
+
+function renderMatchGrid() {
+  const grid=document.getElementById('matchGrid');
+  grid.innerHTML=mCards.map((c,i)=>`
+    <div class="match-card${c.flipped?' flipped':''}${c.matched?' matched':''}" 
+         onclick="flipCard(${i})" id="mc${i}">
+      <div class="card-back"></div>
+      <div class="card-front">${c.emoji}</div>
+    </div>`).join('');
+}
+
+function flipCard(i) {
+  const c=mCards[i];
+  if(mLocked||c.flipped||c.matched||mFlipped.length>=2) return;
+  c.flipped=true;
+  document.getElementById('mc'+i).classList.add('flipped');
+  mFlipped.push(i);
+  if(mFlipped.length===2){
+    mMoves++;
+    document.getElementById('mMoves').textContent=mMoves;
+    mLocked=true;
+    const [a,b]=mFlipped;
+    if(mCards[a].emoji===mCards[b].emoji){
+      mCards[a].matched=mCards[b].matched=true;
+      document.getElementById('mc'+a).classList.add('matched');
+      document.getElementById('mc'+b).classList.add('matched');
+      mMatched++;
+      document.getElementById('mMatches').textContent=mMatched+'/8';
+      mFlipped=[]; mLocked=false;
+      if(mMatched===8) setTimeout(endMatch,400);
+    } else {
+      setTimeout(()=>{
+        mCards[a].flipped=mCards[b].flipped=false;
+        document.getElementById('mc'+a).classList.remove('flipped');
+        document.getElementById('mc'+b).classList.remove('flipped');
+        mFlipped=[]; mLocked=false;
+      },900);
+    }
+  }
+}
+
+function endMatch() {
+  clearInterval(mInterval);
+  const sc=Math.max(0,1000-mMoves*20-mSeconds*2);
+  const stars=sc>800?3:sc>500?2:1;
+  saveScore('match',sc);
+  const ov=document.getElementById('matchOverlay');
+  ov.style.display='flex';
+  ov.innerHTML=`
+    <div style="font-size:48px;margin-bottom:8px">🎊</div>
+    <h3>You matched them all!</h3>
+    <div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+    <div class="score-big" style="font-size:36px;color:#a855f7">${sc}</div>
+    <p>${mMoves} moves · ${mSeconds}s</p>
+    <button class="btn-game" onclick="startMatch()">Play Again</button>
+    <button class="btn-game" onclick="window.location.href='index.html'" style="background:rgba(255,255,255,.2);margin-top:8px">Shop 🛍</button>`;
+  loadLeaderboard('match');
+}
+
+/* ── HELPERS ── */
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+/* ── INIT ── */
+window.addEventListener('load', () => {
+  initBubble();
+  initRunner();
+  loadLeaderboard('bubble');
+});
+window.addEventListener('resize', () => {
+  initBubble(); initRunner();
+});
+</script>
+</body>
+</html>

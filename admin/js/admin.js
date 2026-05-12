@@ -925,9 +925,8 @@ async function renderAdminStories(el) {
             <td style="text-align:center">
               <button onclick="adminViewStoryComments('${st.id}')" style="background:none;border:none;color:var(--amber);cursor:pointer;font-size:13px;font-weight:600">view →</button>
             </td>
-            <td style="text-align:center">
-              <strong>${viewers.length}</strong>
-              ${viewers.length?`<button onclick="adminViewStoryViewers('${st.id}')" style="background:none;border:none;color:var(--amber);cursor:pointer;font-size:11px;display:block;margin:2px auto">view →</button>`:''}
+            <td style="text-align:center" id="sv-${st.id}">
+              <span style="color:var(--muted);font-size:12px">...</span>
             </td>
             <td style="font-size:11px;color:var(--muted)">${date}</td>
             <td style="font-size:11px;color:${isExpired?'#e74c3c':'var(--muted)'}">${exp}</td>
@@ -936,6 +935,8 @@ async function renderAdminStories(el) {
         }).join('')}</tbody>
       </table></div></div>`;
   } catch(e) { el.innerHTML = `<div class="section-card"><p style="color:var(--danger);padding:16px">${e.message}</p></div>`; }
+  // load viewer counts async
+  setTimeout(()=>loadAdminStoryViewerCounts(),100);
 }
 
 async function adminViewStoryComments(storyId) {
@@ -1066,4 +1067,52 @@ if(_origSettings){
     const sc = document.getElementById('settingsContent');
     if(sc) sc.insertAdjacentHTML('beforeend', renderBroadcastPanel());
   };
+}
+
+
+/* ══════════════════════════════
+   STORY VIEWERS — from story_viewers table
+══════════════════════════════ */
+async function loadAdminStoryViewerCounts(){
+  // load viewer counts for all stories in table
+  const cells=document.querySelectorAll('[id^="sv-"]');
+  for(const cell of cells){
+    const storyId=cell.id.replace('sv-','');
+    try{
+      const res=await sb('story_viewers?story_id=eq.'+storyId+'&select=id,viewer_name,viewer_email,viewer_avatar,viewed_at');
+      const count=res?res.length:0;
+      cell.innerHTML=`<strong>${count}</strong>
+        ${count>0?`<button onclick="adminViewStoryViewersNew('${storyId}')" style="background:none;border:none;color:var(--amber);cursor:pointer;font-size:11px;display:block;margin:2px auto">view →</button>`:''}`;
+    }catch(e){ cell.innerHTML='<span style="color:var(--muted)">-</span>'; }
+  }
+}
+
+async function adminViewStoryViewersNew(storyId){
+  const modal=document.getElementById('orderModal');
+  const box=document.getElementById('orderModalBox');
+  box.innerHTML=`<div class="modal-header"><h3>👁 Story Viewers</h3><button class="btn-close" onclick="closeOrderModal()">×</button></div>
+    <div style="text-align:center;padding:16px;color:var(--muted)">⏳ Loading...</div>`;
+  modal.classList.add('show');
+  try{
+    const viewers=await sb('story_viewers?story_id=eq.'+storyId+'&order=viewed_at.asc');
+    if(!viewers||!viewers.length){
+      box.innerHTML=`<div class="modal-header"><h3>👁 Story Viewers (0)</h3><button class="btn-close" onclick="closeOrderModal()">×</button></div>
+        <p style="text-align:center;color:var(--muted);padding:20px">No viewers yet</p>`;
+      return;
+    }
+    box.innerHTML=`<div class="modal-header"><h3>👁 Story Viewers (${viewers.length})</h3><button class="btn-close" onclick="closeOrderModal()">×</button></div>`+
+    viewers.map(v=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm)">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--warm);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--amber);overflow:hidden;flex-shrink:0">
+        ${v.viewer_avatar?`<img src="${v.viewer_avatar}" style="width:100%;height:100%;object-fit:cover">`:v.viewer_name?v.viewer_name[0].toUpperCase():'?'}
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:500">${escAdm(v.viewer_name||'?')}</div>
+        <div style="font-size:11px;color:var(--muted)">${escAdm(v.viewer_email||'')}</div>
+        <div style="font-size:10px;color:var(--muted)">${new Date(v.viewed_at).toLocaleString('en-IN')}</div>
+      </div>
+    </div>`).join('');
+  }catch(e){
+    box.innerHTML=`<div class="modal-header"><h3>👁 Story Viewers</h3><button class="btn-close" onclick="closeOrderModal()">×</button></div>
+      <p style="color:var(--danger);padding:16px">${e.message}</p>`;
+  }
 }

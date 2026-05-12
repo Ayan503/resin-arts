@@ -628,13 +628,13 @@ async function showStory(){
   document.getElementById('storyDelBtn').style.display=isOwn?'block':'none';
 
   if(isOwn){
-    // OWNER: see likes with names + viewers + comments
-    document.getElementById('stViewersBtn').style.display='flex';
+    // OWNER: see likes + viewers count + comments
     document.getElementById('stCommentToggle').style.display='flex';
     document.getElementById('storyCommentRow').style.display='flex';
-    // show like count with likers
     loadStoryLikers(st);
     loadStoryComments(st.id);
+    // load viewer count
+    loadStoryViewerCount(st.id);
   } else {
     // OTHERS: only like button + comment input
     document.getElementById('stLikeCount').style.display='none';
@@ -727,17 +727,16 @@ async function recordStoryView(st,me){
   if(!me) return;
   if(me.email===st.author_email) return;
   try{
-    // always fetch latest viewers from DB to avoid stale cache
-    const fresh=await sb('community_stories?select=viewers&id=eq.'+st.id);
-    const latestViewers=fresh&&fresh[0]?JSON.parse(fresh[0].viewers||'[]'):[];
-    const already=latestViewers.find(v=>v.email===me.email);
-    if(!already){
-      latestViewers.push({email:me.email,name:me.name||me.email,avatar:me.avatar||null,viewed_at:new Date().toISOString()});
-      const newViewersStr=JSON.stringify(latestViewers);
-      await CDB.patchStory(st.id,{viewers:newViewersStr});
-      st.viewers=newViewersStr; // update local cache
-    } else {
-      st.viewers=JSON.stringify(latestViewers);
+    // use story_viewers table for reliable tracking
+    const existing=await sb('story_viewers?story_id=eq.'+st.id+'&viewer_email=eq.'+encodeURIComponent(me.email));
+    if(!existing||existing.length===0){
+      await sb('story_viewers',{method:'POST',body:JSON.stringify({
+        story_id:st.id,
+        viewer_email:me.email,
+        viewer_name:me.name||me.email,
+        viewer_avatar:me.avatar||null,
+        viewed_at:new Date().toISOString()
+      })});
     }
   }catch(e){console.log('View record error:',e);}
 }
@@ -749,26 +748,22 @@ async function openViewersPanel(){
   const st=grp.items[sIdx];
   const list=document.getElementById('storyViewersList');
   list.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,.4);font-size:13px">⏳ Loading...</div>';
-  // always fetch fresh from DB
   try{
-    const fresh=await sb('community_stories?select=viewers,likes&id=eq.'+st.id);
-    if(fresh&&fresh[0]){
-      st.viewers=fresh[0].viewers||'[]';
-      st.likes=fresh[0].likes||0;
+    const viewers=await sb('story_viewers?story_id=eq.'+st.id+'&order=viewed_at.asc');
+    if(!viewers||!viewers.length){
+      list.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,.4);font-size:13px">No viewers yet 👁</div>';
+    } else {
+      list.innerHTML=viewers.map(v=>{
+        const av=v.viewer_avatar?`<img src="${v.viewer_avatar}" alt="">`:v.viewer_name?v.viewer_name[0].toUpperCase():'?';
+        return `<div class="story-viewer-item">
+          <div class="story-viewer-item-av">${av}</div>
+          <div><div class="story-viewer-item-name">${escH(v.viewer_name||v.viewer_email)}</div><div class="story-viewer-item-time">${timeAgo(v.viewed_at)}</div></div>
+        </div>`;
+      }).join('');
     }
-  }catch(e){}
-  let viewers=[];
-  try{ viewers=st.viewers?JSON.parse(st.viewers):[]; }catch(e){}
-  if(!viewers.length){
-    list.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,.4);font-size:13px">No viewers yet</div>';
-  } else {
-    list.innerHTML=viewers.map(v=>{
-      const av=v.avatar?`<img src="${v.avatar}" alt="">`:v.name?v.name[0].toUpperCase():'?';
-      return `<div class="story-viewer-item">
-        <div class="story-viewer-item-av">${av}</div>
-        <div><div class="story-viewer-item-name">${escH(v.name||v.email)}</div><div class="story-viewer-item-time">${timeAgo(v.viewed_at)}</div></div>
-      </div>`;
-    }).join('');
+  }catch(e){
+    list.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,.4);font-size:13px">Could not load viewers</div>';
+    console.log('Viewers error:',e);
   }
 }
 function closeViewersPanel(){
@@ -1149,9 +1144,21 @@ async function loadStoryLikers(st){
   if(!likeCountEl) return;
   likeCountEl.style.display='inline';
   const n=st.likes||0;
-  if(n===0){likeCountEl.textContent='';return;}
-  // show like count — likers stored in story_likers if we had it, else just count
-  likeCountEl.textContent=n+' ❤️';
+  likeCountEl.textContent=n>0?(n+' ❤️'):'';
+}
+
+async function loadStoryViewerCount(storyId){
+  const btn=document.getElementById('stViewersBtn');
+  if(!btn) return;
+  try{
+    const res=await sb('story_viewers?story_id=eq.'+storyId+'&select=id');
+    const count=res?res.length:0;
+    btn.style.display='flex';
+    btn.innerHTML='👁 '+count+' Viewer'+(count!==1?'s':'');
+  }catch(e){
+    btn.style.display='flex';
+    btn.innerHTML='👁 Viewers';
+  }
 }
 
 function toggleBioEdit(){
