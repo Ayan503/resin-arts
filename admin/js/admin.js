@@ -845,3 +845,225 @@ async function deleteMedia(id) {
   try{await sb('community_media?id=eq.'+id,{method:'DELETE',prefer:'return=minimal'});showToast('Deleted');await loadMedia();}
   catch(e){showToast('Error','error');}
 }
+
+/* ══════════════════════════════
+   STORY ADMIN — full control
+══════════════════════════════ */
+let allAdminStories = [];
+
+// Override renderCommunityPage to include stories tab
+const _origRenderCommunity = renderCommunityPage;
+async function renderCommunityPage() {
+  const content = document.getElementById('communityContent');
+  content.innerHTML = `
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+      <button class="btn-add" onclick="showCommunityTab('posts',this)" id="ctabPosts" style="background:var(--amber)">📝 Posts</button>
+      <button class="btn-add" onclick="showCommunityTab('stories',this)" id="ctabStories" style="background:var(--muted)">🌟 Stories</button>
+    </div>
+    <div id="communityTabContent"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Loading...</div></div>`;
+  showCommunityTab('posts', document.getElementById('ctabPosts'));
+}
+
+async function showCommunityTab(tab, btn) {
+  document.querySelectorAll('#communityContent .btn-add').forEach(b => b.style.background = 'var(--muted)');
+  if(btn) btn.style.background = 'var(--amber)';
+  const el = document.getElementById('communityTabContent');
+  if(tab === 'posts') await renderAdminPosts(el);
+  else await renderAdminStories(el);
+}
+
+async function renderAdminPosts(el) {
+  el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted)">⏳ Loading posts...</div>';
+  try {
+    allCommunityPosts = await sb('community_posts?order=created_at.desc');
+    if(!allCommunityPosts.length) { el.innerHTML = '<div class="section-card"><div class="empty-state"><div class="icon">🌸</div><p>No posts yet</p></div></div>'; return; }
+    el.innerHTML = `<div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-title">Community Posts (${allCommunityPosts.length})</span>
+        <a href="../community.html" target="_blank" class="btn-add" style="text-decoration:none">🌸 Open Feed</a>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Author</th><th>Post</th><th>Media</th><th>Likes</th><th>Comments</th><th>Date</th><th>Action</th></tr></thead>
+        <tbody>${renderCommunityRows()}</tbody>
+      </table></div></div>`;
+  } catch(e) { el.innerHTML = `<div class="section-card"><p style="color:var(--danger);padding:16px">${e.message}</p></div>`; }
+}
+
+async function renderAdminStories(el) {
+  el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted)">⏳ Loading stories...</div>';
+  try {
+    allAdminStories = await sb('community_stories?order=created_at.desc&limit=100');
+    if(!allAdminStories.length) { el.innerHTML = '<div class="section-card"><div class="empty-state"><div class="icon">🌟</div><p>No stories yet</p></div></div>'; return; }
+
+    const now = new Date();
+    el.innerHTML = `<div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-title">All Stories (${allAdminStories.length})</span>
+        <span style="font-size:12px;color:var(--muted)">Admin can see all — users see only their own stats</span>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Author</th><th>Preview</th><th>Type</th><th>❤️ Likes</th><th>💬 Comments</th><th>👁 Viewers</th><th>Posted</th><th>Expires</th><th>Action</th></tr></thead>
+        <tbody>${allAdminStories.map(st => {
+          const isExpired = new Date(st.expires_at) < now;
+          const date = new Date(st.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+          const exp  = new Date(st.expires_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+          const preview = st.image
+            ? `<img src="${st.image}" style="width:52px;height:72px;object-fit:cover;border-radius:6px;cursor:pointer" onclick="adminViewImg('${st.image.replace(/'/g,"\\'")}'">`
+            : `<div style="width:52px;height:72px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;padding:4px;color:#fff;background:linear-gradient(135deg,#5a3e2b,#c06c2d)">${escAdm((st.text||'').substring(0,30))}</div>`;
+          let viewers = []; try{ viewers=JSON.parse(st.viewers||'[]'); }catch(e){}
+          return `<tr style="${isExpired?'opacity:.5':''}">
+            <td>
+              <strong style="font-size:13px">${escAdm(st.author_name||'?')}</strong>
+              <div style="font-size:11px;color:var(--muted)">${escAdm(st.author_email||'')}</div>
+              ${isExpired?'<span style="font-size:10px;color:#e74c3c;font-weight:600">EXPIRED</span>':'<span style="font-size:10px;color:#27ae60;font-weight:600">ACTIVE</span>'}
+            </td>
+            <td>${preview}</td>
+            <td style="font-size:12px">${st.type==='text'?'✍️ Text':'📷 Photo'}</td>
+            <td style="text-align:center">
+              <strong>${st.likes||0}</strong>
+            </td>
+            <td style="text-align:center">
+              <button onclick="adminViewStoryComments('${st.id}')" style="background:none;border:none;color:var(--amber);cursor:pointer;font-size:13px;font-weight:600">view →</button>
+            </td>
+            <td style="text-align:center">
+              <strong>${viewers.length}</strong>
+              ${viewers.length?`<button onclick="adminViewStoryViewers('${st.id}')" style="background:none;border:none;color:var(--amber);cursor:pointer;font-size:11px;display:block;margin:2px auto">view →</button>`:''}
+            </td>
+            <td style="font-size:11px;color:var(--muted)">${date}</td>
+            <td style="font-size:11px;color:${isExpired?'#e74c3c':'var(--muted)'}">${exp}</td>
+            <td><button class="btn-delete" onclick="adminDeleteStory('${st.id}')">Delete</button></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div></div>`;
+  } catch(e) { el.innerHTML = `<div class="section-card"><p style="color:var(--danger);padding:16px">${e.message}</p></div>`; }
+}
+
+async function adminViewStoryComments(storyId) {
+  const modal = document.getElementById('orderModal');
+  const box   = document.getElementById('orderModalBox');
+  box.innerHTML = `<div class="modal-header"><h3>💬 Story Comments</h3><button class="btn-close" onclick="closeOrderModal()">×</button></div>
+    <div style="text-align:center;padding:16px;color:var(--muted)">⏳ Loading...</div>`;
+  modal.classList.add('show');
+  try {
+    const cs = await sb('story_comments?story_id=eq.'+storyId+'&order=created_at.asc');
+    if(!cs.length) { box.innerHTML += '<p style="text-align:center;color:var(--muted);padding:12px">No comments yet</p>'; return; }
+    const rows = cs.map(c => `
+      <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm)">
+        <div style="flex:1">
+          <strong style="font-size:13px">${escAdm(c.author_name||'User')}</strong>
+          <span style="font-size:11px;color:var(--muted);margin-left:6px">${escAdm(c.author_email||'')}</span>
+          <p style="font-size:13px;color:var(--text);margin:4px 0">${escAdm(c.text)}</p>
+          <span style="font-size:10px;color:var(--muted)">${new Date(c.created_at).toLocaleString('en-IN')}</span>
+        </div>
+        <button class="btn-delete" onclick="adminDeleteStoryComment('${c.id}','${storyId}')" style="align-self:flex-start;flex-shrink:0">Del</button>
+      </div>`).join('');
+    box.innerHTML = `<div class="modal-header"><h3>💬 Story Comments (${cs.length})</h3><button class="btn-close" onclick="closeOrderModal()">×</button></div>${rows}`;
+  } catch(e) { box.innerHTML += `<p style="color:var(--danger);padding:12px">${e.message}</p>`; }
+}
+
+async function adminDeleteStoryComment(cid, storyId) {
+  if(!confirm('Delete this comment?')) return;
+  try {
+    await sb('story_comments?id=eq.'+cid, {method:'DELETE', prefer:'return=minimal'});
+    showToast('Comment deleted');
+    await adminViewStoryComments(storyId);
+  } catch(e) { showToast('Error','error'); }
+}
+
+async function adminViewStoryViewers(storyId) {
+  const st = allAdminStories.find(s => s.id == storyId);
+  let viewers = []; try{ viewers=JSON.parse(st?.viewers||'[]'); }catch(e){}
+  const modal = document.getElementById('orderModal');
+  const box   = document.getElementById('orderModalBox');
+  box.innerHTML = `<div class="modal-header"><h3>👁 Story Viewers (${viewers.length})</h3><button class="btn-close" onclick="closeOrderModal()">×</button></div>
+    ${!viewers.length ? '<p style="text-align:center;color:var(--muted);padding:16px">No viewers yet</p>' :
+    viewers.map(v=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm)">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--warm);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--amber);overflow:hidden;flex-shrink:0">
+        ${v.avatar?`<img src="${v.avatar}" style="width:100%;height:100%;object-fit:cover">`:v.name?v.name[0].toUpperCase():'?'}
+      </div>
+      <div><div style="font-size:13px;font-weight:500">${escAdm(v.name||v.email)}</div>
+        <div style="font-size:11px;color:var(--muted)">${new Date(v.viewed_at).toLocaleString('en-IN')}</div></div>
+    </div>`).join('')}`;
+  modal.classList.add('show');
+}
+
+async function adminDeleteStory(id) {
+  if(!confirm('Delete this story?')) return;
+  try {
+    await sb('story_comments?story_id=eq.'+id, {method:'DELETE', prefer:'return=minimal'}).catch(()=>{});
+    await sb('community_stories?id=eq.'+id, {method:'DELETE', prefer:'return=minimal'});
+    showToast('Story deleted');
+    document.getElementById('ctabStories')?.click();
+    await renderAdminStories(document.getElementById('communityTabContent'));
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+}
+
+/* ══════════════════════════════
+   ADMIN BROADCAST NOTIFICATIONS
+══════════════════════════════ */
+async function broadcastNotif(type, message, refId, refType){
+  // get all users and send notification to each
+  try {
+    const users = await sb('users?select=email');
+    const adminEmail = 'admin@resinaurabypryia.com';
+    for(const u of users){
+      if(!u.email || u.email === adminEmail) continue;
+      await sb('notifications', {method:'POST', body:JSON.stringify({
+        recipient_email: u.email,
+        type,
+        actor_name:   'Resin Aura By Priya ✨',
+        actor_avatar: null,
+        actor_email:  adminEmail,
+        ref_id:       refId || null,
+        ref_type:     refType || null,
+        message,
+        is_read:      false,
+        created_at:   new Date().toISOString(),
+      })});
+    }
+    showToast('Notification sent to all users ✓');
+  } catch(e){ showToast('Error: '+e.message, 'error'); }
+}
+
+// Called when admin adds a new product — auto-broadcast
+async function notifyNewProduct(productName, productId){
+  await broadcastNotif('new_product', `launched a new product: "${productName}" 🎨`, productId, 'product');
+}
+
+// Admin can manually send offer/news from Settings
+async function sendAdminBroadcast(){
+  const msg   = document.getElementById('broadcastMsg')?.value.trim();
+  const type  = document.getElementById('broadcastType')?.value || 'admin_news';
+  if(!msg){ showToast('Enter a message','error'); return; }
+  await broadcastNotif(type, msg, null, null);
+  if(document.getElementById('broadcastMsg')) document.getElementById('broadcastMsg').value = '';
+}
+
+// Render broadcast section inside settings or a dedicated tab
+function renderBroadcastPanel(){
+  return `<div class="section-card" style="margin-top:20px">
+    <div class="section-card-header"><span class="section-card-title">📢 Send Notification to All Users</span></div>
+    <div style="padding:4px 0 12px">
+      <select id="broadcastType" style="width:100%;border:1.5px solid var(--warm);border-radius:10px;padding:10px;font-size:13px;font-family:'DM Sans',sans-serif;margin-bottom:10px;outline:none">
+        <option value="admin_news">📢 General News / Announcement</option>
+        <option value="offer">🏷️ Offer / Discount</option>
+        <option value="new_product">🎨 New Product Launch</option>
+      </select>
+      <textarea id="broadcastMsg" placeholder="e.g. 20% off on all resin items this weekend! 🎉" maxlength="200"
+        style="width:100%;border:1.5px solid var(--warm);border-radius:10px;padding:10px;font-size:14px;font-family:'DM Sans',sans-serif;resize:none;min-height:80px;outline:none;margin-bottom:10px"></textarea>
+      <button onclick="sendAdminBroadcast()" style="background:var(--amber);color:#fff;border:none;border-radius:20px;padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+        Send to All Users 📢
+      </button>
+    </div>
+  </div>`;
+}
+
+// Patch renderSettingsPage to include broadcast
+const _origSettings = typeof renderSettingsPage !== 'undefined' ? renderSettingsPage : null;
+if(_origSettings){
+  window.renderSettingsPage = async function(){
+    await _origSettings();
+    const sc = document.getElementById('settingsContent');
+    if(sc) sc.insertAdjacentHTML('beforeend', renderBroadcastPanel());
+  };
+}
