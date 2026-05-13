@@ -47,7 +47,7 @@ function showPage(name,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   el&&el.classList.add('active');
-  const titles={dashboard:'Dashboard',products:'Products',orders:'Orders',reviews:'Reviews',settings:'Settings',community:'🌸 Community Feed',media:'🗂 Media Library'};
+  const titles={dashboard:'Dashboard',products:'Products',orders:'Orders',reviews:'Reviews',settings:'Settings',community:'🌸 Community Feed',media:'🗂 Media Library',games:'🎮 Games Management'};
   document.getElementById('topbarTitle').textContent=titles[name]||name;
   if(name==='products')  renderProductTable();
   if(name==='orders')    renderOrderTable();
@@ -56,6 +56,7 @@ function showPage(name,el){
   if(name==='settings')  renderSettingsPage();
   if(name==='community') renderCommunityPage();
   if(name==='media')     renderMediaPage();
+  if(name==='games')     renderGamesPage();
   closeSidebar();
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('mobOverlay').classList.toggle('show');}
@@ -1115,4 +1116,128 @@ async function adminViewStoryViewersNew(storyId){
     box.innerHTML=`<div class="modal-header"><h3>👁 Story Viewers</h3><button class="btn-close" onclick="closeOrderModal()">×</button></div>
       <p style="color:var(--danger);padding:16px">${e.message}</p>`;
   }
+}
+
+/* ══════════════════════════════
+   GAMES MANAGEMENT ADMIN
+══════════════════════════════ */
+async function renderGamesPage(){
+  const el=document.getElementById('gamesContent');
+  if(!el) return;
+  
+  // Load current prizes
+  let prizes=[];
+  try{ prizes=await sb('game_prizes?order=id.asc'); }catch(e){}
+  
+  const defaultPrizes=[
+    {label:'5% OFF',weight:30,type:'coupon',value:'RESIN5',emoji:'🎁',active:true},
+    {label:'10% OFF',weight:20,type:'coupon',value:'RESIN10',emoji:'🎊',active:true},
+    {label:'Free Ship',weight:15,type:'coupon',value:'FREESHIP',emoji:'🚚',active:true},
+    {label:'Try Again',weight:25,type:'none',value:'',emoji:'😅',active:true},
+    {label:'15% OFF',weight:8,type:'coupon',value:'RESIN15',emoji:'💎',active:true},
+    {label:'20% OFF',weight:2,type:'coupon',value:'RESIN20',emoji:'🏆',active:true},
+  ];
+
+  el.innerHTML=`
+  <div class="section-card" style="margin-bottom:20px">
+    <div class="section-card-header">
+      <span class="section-card-title">🎯 Spin & Scratch Prizes</span>
+      <button class="btn-add" onclick="saveGamePrizes()">Save Changes</button>
+    </div>
+    <p style="font-size:13px;color:var(--muted);padding:0 0 12px">Control what prizes appear on the Spin wheel and Scratch cards. Toggle active/inactive anytime.</p>
+    <div id="prizesTable">
+      <table>
+        <thead><tr><th>Emoji</th><th>Label</th><th>Type</th><th>Coupon Code</th><th>Weight</th><th>Active</th></tr></thead>
+        <tbody id="prizesTbody">
+          ${(prizes.length?prizes:defaultPrizes).map((p,i)=>`
+          <tr id="prow-${i}">
+            <td><input type="text" value="${escAdm(p.emoji||'🎁')}" id="pEmoji-${i}" style="width:44px;text-align:center;border:1px solid var(--warm);border-radius:6px;padding:4px"></td>
+            <td><input type="text" value="${escAdm(p.label||'')}" id="pLabel-${i}" style="width:90px;border:1px solid var(--warm);border-radius:6px;padding:4px;font-size:13px"></td>
+            <td>
+              <select id="pType-${i}" style="border:1px solid var(--warm);border-radius:6px;padding:4px;font-size:12px">
+                <option value="coupon" ${p.type==='coupon'?'selected':''}>Coupon</option>
+                <option value="none" ${p.type==='none'?'selected':''}>No Prize</option>
+              </select>
+            </td>
+            <td><input type="text" value="${escAdm(p.value||p.code||'')}" id="pValue-${i}" placeholder="e.g. RESIN10" style="width:90px;border:1px solid var(--warm);border-radius:6px;padding:4px;font-size:12px;font-family:monospace"></td>
+            <td><input type="number" value="${p.weight||10}" id="pWeight-${i}" min="1" max="100" style="width:50px;border:1px solid var(--warm);border-radius:6px;padding:4px;text-align:center"></td>
+            <td style="text-align:center">
+              <label style="cursor:pointer">
+                <input type="checkbox" id="pActive-${i}" ${p.active!==false?'checked':''} style="width:16px;height:16px;cursor:pointer">
+              </label>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:12px">
+      <button onclick="addPrizeRow()" style="background:none;border:1.5px dashed var(--warm);border-radius:10px;padding:8px 16px;font-size:13px;color:var(--muted);cursor:pointer">+ Add Prize</button>
+    </div>
+  </div>
+
+  <div class="section-card" style="margin-bottom:20px">
+    <div class="section-card-header">
+      <span class="section-card-title">📊 Game Scores</span>
+    </div>
+    <div id="gameScoresTable"><div style="text-align:center;padding:20px;color:var(--muted)">⏳ Loading...</div></div>
+  </div>`;
+
+  loadGameScores();
+}
+
+let prizeRowCount=6;
+function addPrizeRow(){
+  const i=prizeRowCount++;
+  const tbody=document.getElementById('prizesTbody');
+  const tr=document.createElement('tr');tr.id='prow-'+i;
+  tr.innerHTML=`
+    <td><input type="text" value="🎁" id="pEmoji-${i}" style="width:44px;text-align:center;border:1px solid var(--warm);border-radius:6px;padding:4px"></td>
+    <td><input type="text" value="New Prize" id="pLabel-${i}" style="width:90px;border:1px solid var(--warm);border-radius:6px;padding:4px;font-size:13px"></td>
+    <td><select id="pType-${i}" style="border:1px solid var(--warm);border-radius:6px;padding:4px;font-size:12px"><option value="coupon">Coupon</option><option value="none">No Prize</option></select></td>
+    <td><input type="text" value="" id="pValue-${i}" placeholder="COUPON" style="width:90px;border:1px solid var(--warm);border-radius:6px;padding:4px;font-size:12px;font-family:monospace"></td>
+    <td><input type="number" value="10" id="pWeight-${i}" min="1" max="100" style="width:50px;border:1px solid var(--warm);border-radius:6px;padding:4px;text-align:center"></td>
+    <td style="text-align:center"><input type="checkbox" id="pActive-${i}" checked style="width:16px;height:16px"></td>`;
+  tbody.appendChild(tr);
+}
+
+async function saveGamePrizes(){
+  const prizes=[];
+  for(let i=0;i<prizeRowCount;i++){
+    const el=document.getElementById('prow-'+i);
+    if(!el) continue;
+    prizes.push({
+      emoji:document.getElementById('pEmoji-'+i)?.value||'🎁',
+      label:document.getElementById('pLabel-'+i)?.value||'Prize',
+      type:document.getElementById('pType-'+i)?.value||'none',
+      value:document.getElementById('pValue-'+i)?.value||'',
+      weight:parseInt(document.getElementById('pWeight-'+i)?.value||'10'),
+      active:document.getElementById('pActive-'+i)?.checked??true,
+    });
+  }
+  try{
+    // delete all and reinsert
+    await sb('game_prizes?id=gt.0',{method:'DELETE',prefer:'return=minimal'}).catch(()=>{});
+    for(const p of prizes){
+      await sb('game_prizes',{method:'POST',body:JSON.stringify(p)});
+    }
+    showToast('Prizes saved! ✓');
+  }catch(e){showToast('Error saving: '+e.message,'error');}
+}
+
+async function loadGameScores(){
+  const el=document.getElementById('gameScoresTable');if(!el)return;
+  try{
+    const scores=await sb('game_scores?order=created_at.desc&limit=50');
+    if(!scores?.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted)">No scores yet</div>';return;}
+    const gameNames={spin:'🎯 Spin',scratch:'🎰 Scratch',catch:'🪣 Catch',quiz:'🔤 Quiz',colormix:'🎨 Color'};
+    el.innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>Player</th><th>Game</th><th>Score</th><th>Date</th></tr></thead>
+      <tbody>${scores.map(s=>`<tr>
+        <td><strong style="font-size:13px">${escAdm(s.player_name)}</strong><div style="font-size:11px;color:var(--muted)">${escAdm(s.player_email||'Guest')}</div></td>
+        <td>${gameNames[s.game]||s.game}</td>
+        <td><strong style="color:var(--amber)">${s.score}</strong></td>
+        <td style="font-size:11px;color:var(--muted)">${new Date(s.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+      </tr>`).join('')}
+      </tbody></table></div>`;
+  }catch(e){el.innerHTML=`<div style="color:var(--danger);padding:16px">${e.message}</div>`;}
 }

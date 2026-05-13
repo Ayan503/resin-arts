@@ -32,6 +32,7 @@
     <div class="nav-item" onclick="showPage('reviews',this)"><span class="nav-icon">⭐</span>Reviews</div>
     <div class="nav-item" onclick="showPage('community',this)"><span class="nav-icon">🌸</span>Community<span class="nav-badge" id="communityBadge" style="display:none">!</span></div>
     <div class="nav-item" onclick="showPage('media',this)"><span class="nav-icon">🗂</span>Media Library</div>
+    <div class="nav-item" onclick="showPage('games',this)"><span class="nav-icon">🎮</span>Games</div>
     <div class="nav-section">Settings</div>
     <div class="nav-item" onclick="showPage('settings',this)"><span class="nav-icon">⚙️</span>Settings</div>
     <div class="sidebar-bottom" onclick="adminLogout()"><span>🚪</span>Logout</div>
@@ -112,6 +113,11 @@
     <!-- Media Library page rendered by JS -->
     <div class="page" id="page-media">
       <div id="mediaContent"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Loading...</div></div>
+    </div>
+
+    <!-- Games Management -->
+    <div class="page" id="page-games">
+      <div id="gamesContent"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Loading...</div></div>
     </div>
   </div>
 </div>
