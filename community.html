@@ -195,11 +195,19 @@ header { position: relative !important; top: auto !important; left: auto !import
   <div class="header-inner">
     <a class="logo" href="index.html">Resin <span>Aura By Priya Chakraborty</span></a>
     <div class="header-actions">
-      <button class="btn-icon" onclick="window.location.href='index.html'">🛍</button>
-      <button class="notif-bell-btn" id="notifBellBtn" onclick="openNotifPanel()" title="Notifications">
-        🔔<span class="notif-badge" id="notifBadge"></span>
+      <div class="desktop-nav">
+        <a class="community-nav-link" href="index.html">🛍 Shop</a>
+        <a class="community-nav-link" href="games.html">🎮 Games</a>
+        <button class="notif-bell-btn" id="notifBellBtn" onclick="openNotifPanel()" title="Notifications">
+          🔔<span class="notif-badge" id="notifBadge"></span>
+        </button>
+        <button class="user-btn" id="userBtn" onclick="handleUserBtn()">Login</button>
+      </div>
+      <!-- Mobile: notif + hamburger -->
+      <button class="notif-bell-btn" id="notifBellBtnMobile" onclick="openNotifPanel()" style="display:none">
+        🔔<span class="notif-badge" id="notifBadgeMobile"></span>
       </button>
-      <button class="user-btn" id="userBtn" onclick="handleUserBtn()">Login</button>
+      <button class="hamburger-btn" onclick="openCommMenu()" style="display:flex">☰</button>
     </div>
   </div>
   <div style="background:rgba(0,0,0,.18);margin:0 -20px;padding:7px 20px;display:flex;align-items:center;justify-content:space-between">
@@ -1224,6 +1232,40 @@ initFeed().then(()=>{
   const s=getSession();
   if(s) startNotifPolling();
 });
+</script>
+<!-- COMMUNITY MOBILE MENU -->
+<div class="mobile-menu-overlay" id="commOverlay" onclick="closeCommMenu()"></div>
+<div class="mobile-menu" id="commMenu">
+  <div class="mobile-menu-header">
+    <span class="mobile-menu-title">🌿 Menu</span>
+    <button class="mobile-menu-close" onclick="closeCommMenu()">✕</button>
+  </div>
+  <div class="mobile-menu-body">
+    <a class="mobile-menu-item" href="index.html"><span class="mi-icon">🛍</span><span class="mi-label">Shop</span></a>
+    <a class="mobile-menu-item" href="games.html"><span class="mi-icon">🎮</span><span class="mi-label">Games</span></a>
+    <button class="mobile-menu-item" onclick="openNotifPanel();closeCommMenu()"><span class="mi-icon">🔔</span><span class="mi-label">Notifications</span><span class="mi-badge" id="commNotifBadge" style="display:none">!</span></button>
+    <button class="mobile-menu-item" onclick="handleUserBtn();closeCommMenu()"><span class="mi-icon">👤</span><span class="mi-label" id="commUserLabel">Login</span></button>
+  </div>
+</div>
+<script>
+function openCommMenu(){
+  document.getElementById('commMenu').classList.add('open');
+  document.getElementById('commOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  const s=getSession?getSession():null;
+  const lbl=document.getElementById('commUserLabel');
+  if(lbl)lbl.textContent=s?(s.name||'My Account'):'Login / Register';
+}
+function closeCommMenu(){
+  document.getElementById('commMenu').classList.remove('open');
+  document.getElementById('commOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+// show mobile notif on small screens
+if(window.innerWidth<=600){
+  const mb=document.getElementById('notifBellBtnMobile');
+  if(mb)mb.style.display='flex';
+}
 </script>
 </body>
 </html>

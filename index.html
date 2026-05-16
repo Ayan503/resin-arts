@@ -14,18 +14,53 @@
   <div class="header-inner">
     <a class="logo" href="#top">Resin <span>Aura By Priya Chakraborty</span></a>
     <div class="header-actions">
-      <a class="community-nav-link" href="community.html" title="Community">🌸<span class="nav-link-text"> Community</span></a>
-      <a class="community-nav-link" href="games.html" title="Games">🎮<span class="nav-link-text"> Games</span></a>
-      <a class="community-nav-link" href="community.html" id="mainNotifBtn" style="position:relative;display:none">
-        🔔<span id="mainNotifBadge" style="position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:none;align-items:center;justify-content:center">0</span>
-      </a>
+      <!-- Desktop nav -->
+      <div class="desktop-nav">
+        <a class="community-nav-link" href="community.html">🌸 Community</a>
+        <a class="community-nav-link" href="games.html">🎮 Games</a>
+        <button class="user-btn" id="userBtn" onclick="handleUserBtn()">Login</button>
+      </div>
+      <!-- Cart always visible -->
       <button class="btn-icon" onclick="openCart()" aria-label="Cart">
         🛒<span class="cart-badge" id="cartBadge">0</span>
       </button>
-      <button class="user-btn" id="userBtn" onclick="handleUserBtn()">Login</button>
+      <!-- Mobile hamburger -->
+      <button class="hamburger-btn" onclick="openMobileMenu()" aria-label="Menu">☰</button>
     </div>
   </div>
 </header>
+
+<!-- ── MOBILE MENU ── -->
+<div class="mobile-menu-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-header">
+    <span class="mobile-menu-title">🌿 Menu</span>
+    <button class="mobile-menu-close" onclick="closeMobileMenu()">✕</button>
+  </div>
+  <div class="mobile-menu-body">
+    <a class="mobile-menu-item" href="community.html">
+      <span class="mi-icon">🌸</span>
+      <span class="mi-label">Community</span>
+    </a>
+    <a class="mobile-menu-item" href="games.html">
+      <span class="mi-icon">🎮</span>
+      <span class="mi-label">Games</span>
+    </a>
+    <button class="mobile-menu-item" id="mobileUserBtn" onclick="handleMobileUserBtn()">
+      <span class="mi-icon">👤</span>
+      <span class="mi-label" id="mobileUserLabel">Login / Register</span>
+    </button>
+    <button class="mobile-menu-item" onclick="openCart();closeMobileMenu()">
+      <span class="mi-icon">🛒</span>
+      <span class="mi-label">My Cart</span>
+      <span class="mi-badge" id="mobileCartBadge" style="display:none">0</span>
+    </button>
+    <a class="mobile-menu-item" href="community.html#notifications" onclick="closeMobileMenu()">
+      <span class="mi-icon">🔔</span>
+      <span class="mi-label">Notifications</span>
+    </a>
+  </div>
+</div>
 
 <!-- ── HERO ── -->
 <section class="hero" id="top">
@@ -196,5 +231,32 @@
 <script src="js/main.js"></script>
 <script src="js/reviews.js"></script>
 
+<script>
+function openMobileMenu(){
+  document.getElementById('mobileMenu').classList.add('open');
+  document.getElementById('mobileOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  // sync user button
+  const s=getSession?getSession():null;
+  const lbl=document.getElementById('mobileUserLabel');
+  if(lbl) lbl.textContent=s?(s.name||'My Account'):'Login / Register';
+  // sync cart badge
+  const cb=document.getElementById('mobileCartBadge');
+  const mainBadge=document.getElementById('cartBadge');
+  if(cb&&mainBadge){
+    const n=parseInt(mainBadge.textContent)||0;
+    cb.textContent=n; cb.style.display=n?'inline':'none';
+  }
+}
+function closeMobileMenu(){
+  document.getElementById('mobileMenu').classList.remove('open');
+  document.getElementById('mobileOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function handleMobileUserBtn(){
+  closeMobileMenu();
+  handleUserBtn();
+}
+</script>
 </body>
 </html>
