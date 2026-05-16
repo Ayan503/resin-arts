@@ -6,8 +6,7 @@
 <title>Community — Resin Aura By Priya</title>
 <link rel="stylesheet" href="css/style.css">
 <style>
-body { padding-top: 0 !important; }
-header { position: relative !important; top: auto !important; left: auto !important; right: auto !important; width: 100% !important; box-shadow: 0 2px 12px rgba(0,0,0,.15); }
+/* community page — header stays fixed like main page */
 
 /* ── STORY STRIP ── */
 .story-strip-wrap { background:#fff; border-bottom:1px solid var(--warm); padding:12px 0 10px; overflow:hidden; }
@@ -207,14 +206,15 @@ header { position: relative !important; top: auto !important; left: auto !import
       <button class="notif-bell-btn" id="notifBellBtnMobile" onclick="openNotifPanel()" style="display:none">
         🔔<span class="notif-badge" id="notifBadgeMobile"></span>
       </button>
-      <button class="hamburger-btn" onclick="openCommMenu()" style="display:flex">☰</button>
+      <button class="hamburger-btn" onclick="openCommMenu()">☰</button>
     </div>
   </div>
-  <div style="background:rgba(0,0,0,.18);margin:0 -20px;padding:7px 20px;display:flex;align-items:center;justify-content:space-between">
-    <span style="font-family:'Playfair Display',serif;color:var(--cream);font-size:14px;font-weight:600">🌸 Community</span>
-    <span style="font-size:11px;color:rgba(255,255,255,.6)">Share your Resin Aura moments</span>
-  </div>
 </header>
+<!-- COMMUNITY TITLE BAR -->
+<div style="background:var(--brown);padding:6px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08)">
+  <span style="font-family:'Playfair Display',serif;color:var(--cream);font-size:13px;font-weight:600">🌸 Community</span>
+  <span style="font-size:11px;color:rgba(255,255,255,.5)">Share your Resin Aura moments</span>
+</div>
 
 <!-- STORY STRIP -->
 <div class="story-strip-wrap">
